@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Plus, Trash2, PieChart, ChevronDown, ChevronUp, Pencil, Check, X, Lock, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { Asset, RiskLevel, Language, Currency } from '../types';
@@ -12,6 +13,7 @@ interface AssetManagerProps {
   totalRecorded: number;
   language: Language;
   currency: Currency;
+  onShowToast: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 type SortKey = 'name' | 'riskLevel' | 'amount' | 'expectedReturnRate';
@@ -33,7 +35,8 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
   simulationPrincipal,
   totalRecorded,
   language,
-  currency 
+  currency,
+  onShowToast
 }) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   
@@ -68,17 +71,44 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
     setNewAssetReturn(defaultReturn);
   };
 
+  const handleNewAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '' || parseFloat(val) >= 0) {
+      setNewAssetAmount(val);
+    }
+  };
+
+  const handleNewReturnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '' || parseFloat(val) >= 0) {
+      setNewAssetReturn(val);
+    }
+  };
+
   const handleAdd = () => {
-    if (!newAssetName || !newAssetAmount) return;
+    if (!newAssetName.trim()) {
+      onShowToast(t.errorNameRequired, 'error');
+      return;
+    }
+
     const amount = parseFloat(newAssetAmount);
+    if (newAssetAmount === '' || isNaN(amount) || amount < 0) {
+      onShowToast(t.errorInvalidAmount, 'error');
+      return;
+    }
+
     const returnRate = parseFloat(newAssetReturn);
+    if (newAssetReturn === '' || isNaN(returnRate) || returnRate < 0) {
+      onShowToast(t.errorInvalidReturn, 'error');
+      return;
+    }
 
     const newAsset: Asset = {
       id: Date.now().toString(),
       name: newAssetName,
       riskLevel: newAssetRisk,
-      amount: isNaN(amount) ? 0 : amount,
-      expectedReturnRate: isNaN(returnRate) ? 0 : returnRate,
+      amount: amount,
+      expectedReturnRate: returnRate,
     };
     onAddAsset(newAsset);
     setNewAssetName('');
@@ -102,16 +132,29 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
   const saveEdit = () => {
     if (!editingRow) return;
     
-    // Parse values
-    const amount = editingRow.amount === '' ? 0 : parseFloat(editingRow.amount);
-    const expectedReturnRate = editingRow.expectedReturnRate === '' ? 0 : parseFloat(editingRow.expectedReturnRate);
+    if (!editingRow.name.trim()) {
+        onShowToast(t.errorNameRequired, 'error');
+        return;
+    }
+
+    const amount = parseFloat(editingRow.amount);
+    if (editingRow.amount === '' || isNaN(amount) || amount < 0) {
+        onShowToast(t.errorInvalidAmount, 'error');
+        return;
+    }
+
+    const expectedReturnRate = parseFloat(editingRow.expectedReturnRate);
+    if (editingRow.expectedReturnRate === '' || isNaN(expectedReturnRate) || expectedReturnRate < 0) {
+        onShowToast(t.errorInvalidReturn, 'error');
+        return;
+    }
     
     const updatedAsset: Asset = {
       id: editingRow.id,
       name: editingRow.name,
       riskLevel: editingRow.riskLevel,
-      amount: isNaN(amount) ? 0 : amount,
-      expectedReturnRate: isNaN(expectedReturnRate) ? 0 : expectedReturnRate,
+      amount: amount,
+      expectedReturnRate: expectedReturnRate,
     };
     
     onUpdateAsset(updatedAsset);
@@ -172,7 +215,7 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      {/* Title Section - Always on top */}
+      {/* Title Section */}
       <div className="mb-4">
         <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
           <PieChart className="w-5 h-5 text-indigo-500" />
@@ -180,24 +223,24 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
         </h2>
       </div>
       
-      {/* Stats Section - Below Title */}
-      <div className="flex flex-wrap gap-2 w-full mb-6">
+      {/* Stats Section - Grid Layout 3 Cols */}
+      <div className="grid grid-cols-3 gap-3 w-full mb-6">
           {/* Read-only Initial Principal (First) */}
-          <div className="flex items-center justify-between sm:justify-start bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 opacity-80 cursor-not-allowed flex-grow sm:flex-grow-0" title="Edit this in Simulation Config">
-            <span className="text-[10px] font-bold text-indigo-400 mr-2 uppercase tracking-wide whitespace-nowrap">{t.initialPrincipal}:</span>
-            <div className="flex items-center gap-1">
-               <span className="text-indigo-900 font-bold text-sm">
+          <div className="flex flex-col justify-center bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-100 opacity-80 cursor-not-allowed w-full overflow-hidden" title="Edit this in Simulation Config">
+            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wide truncate w-full">{t.initialPrincipal}</span>
+            <div className="flex items-center gap-1 mt-0.5">
+               <span className="text-indigo-900 font-bold text-sm truncate">
                   {formatCurrency(simulationPrincipal)}
                </span>
-               <Lock className="w-3 h-3 text-indigo-400" />
+               <Lock className="w-3 h-3 text-indigo-400 flex-shrink-0" />
             </div>
           </div>
 
           {/* Read-only Total Recorded (Second) */}
-          <div className="flex items-center justify-between sm:justify-start bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 flex-grow sm:flex-grow-0">
-             <span className="text-[10px] font-bold text-slate-400 mr-2 uppercase tracking-wide whitespace-nowrap">{t.totalRecorded}:</span>
+          <div className="flex flex-col justify-center bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 w-full overflow-hidden">
+             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate w-full">{t.totalRecorded}</span>
              <span 
-               className="text-sm font-bold text-slate-700 cursor-help border-b border-dotted border-slate-400"
+               className="text-sm font-bold text-slate-700 cursor-help border-b border-dotted border-slate-400 w-fit mt-0.5 truncate max-w-full"
                title={`${currency} ${totalRecorded.toLocaleString()}`}
              >
                {formatCurrency(totalRecorded)}
@@ -205,9 +248,9 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
           </div>
 
           {/* Utilization Ratio (Third) */}
-          <div className="flex items-center justify-between sm:justify-start bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 flex-grow sm:flex-grow-0">
-             <span className="text-[10px] font-bold text-blue-400 mr-2 uppercase tracking-wide whitespace-nowrap">{t.utilization}:</span>
-             <span className="text-sm font-bold text-blue-700">
+          <div className="flex flex-col justify-center bg-blue-50 px-3 py-2 rounded-lg border border-blue-100 w-full overflow-hidden">
+             <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wide truncate w-full">{t.utilization}</span>
+             <span className="text-sm font-bold text-blue-700 mt-0.5">
                {utilization.toFixed(1)}%
              </span>
           </div>
@@ -262,21 +305,23 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
             <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">{t.amountLabel} ({currency === 'USD' ? '$' : '¥'})</label>
             <input
               type="number"
+              min="0"
               placeholder="0"
               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white placeholder:text-slate-300"
               value={newAssetAmount}
-              onChange={(e) => setNewAssetAmount(e.target.value)}
+              onChange={handleNewAmountChange}
             />
           </div>
           <div className="md:col-span-2">
             <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">{t.returnLabel}</label>
             <input
               type="number"
+              min="0"
               step="0.1"
               placeholder="0"
               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white placeholder:text-slate-300"
               value={newAssetReturn}
-              onChange={(e) => setNewAssetReturn(e.target.value)}
+              onChange={handleNewReturnChange}
             />
           </div>
           <div className="md:col-span-2 flex items-end">

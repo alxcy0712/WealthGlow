@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { Asset, RiskLevel, SimulationYear, OptimizationResult, Language, Currency } from './types';
 import { AssetManager } from './components/AssetManager';
@@ -206,6 +207,28 @@ const App: React.FC = () => {
     }
   };
 
+  const handlePrincipalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Allow empty string or non-negative numbers
+    if (val === '' || parseFloat(val) >= 0) {
+      setSimulationPrincipal(val);
+    }
+  };
+
+  const handleWithdrawalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '' || parseFloat(val) >= 0) {
+      setAnnualWithdrawal(val);
+    }
+  };
+
+  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '' || parseFloat(val) >= 0) {
+      setWithdrawalIncreaseRate(val);
+    }
+  };
+
   const handleOptimize = async () => {
     setIsOptimizing(true);
     setError(null);
@@ -349,10 +372,9 @@ const App: React.FC = () => {
                     min="0"
                     placeholder="0"
                     value={simulationPrincipal}
-                    onChange={(e) => setSimulationPrincipal(e.target.value)}
+                    onChange={handlePrincipalChange}
                     onBlur={handlePrincipalBlur}
                     className="w-full pl-7 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-slate-50/50 hover:bg-white transition-all font-bold text-slate-800 shadow-sm"
-                    style={{ MozAppearance: 'textfield' }} 
                   />
                 </div>
               </div>
@@ -377,9 +399,8 @@ const App: React.FC = () => {
                         min="0"
                         placeholder="0"
                         value={annualWithdrawal}
-                        onChange={(e) => setAnnualWithdrawal(e.target.value)}
+                        onChange={handleWithdrawalChange}
                         className="flex-1 w-full min-w-0 px-2 py-2.5 bg-transparent border-none outline-none text-sm text-slate-900 placeholder:text-slate-300"
-                        style={{ MozAppearance: 'textfield' }} 
                       />
 
                       {/* Divider */}
@@ -414,9 +435,8 @@ const App: React.FC = () => {
                         step="0.1"
                         placeholder="0"
                         value={withdrawalIncreaseRate}
-                        onChange={(e) => setWithdrawalIncreaseRate(e.target.value)}
+                        onChange={handleRateChange}
                         className="w-full pl-3 pr-8 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-slate-50/50 hover:bg-white transition-all shadow-sm"
-                        style={{ MozAppearance: 'textfield' }} 
                       />
                       <span className="absolute right-3 top-2.5 text-slate-400 text-sm pointer-events-none group-focus-within:text-indigo-500 transition-colors">
                         %
@@ -460,6 +480,7 @@ const App: React.FC = () => {
           totalRecorded={totalRecorded}
           language={language}
           currency={currency}
+          onShowToast={showToast}
         />
 
         {/* ================= 3. STATS CARDS ================= */}
@@ -566,7 +587,7 @@ const App: React.FC = () => {
               </>
            ) : (
               <>
-                 <Sparkles className="w-6 h-6 flex-shrink-0" />
+                 <Sparkles className="w-6 h-6 flex-shrink-0 transition-transform duration-700 ease-in-out group-hover:rotate-[360deg]" />
                  <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 ml-0 group-hover:ml-3 transition-all duration-300 font-medium">
                    {t.optimize}
                  </span>
