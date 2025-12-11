@@ -11,6 +11,7 @@ interface AssetManagerProps {
   onRemoveAsset: (id: string) => void;
   simulationPrincipal: number;
   totalRecorded: number;
+  cashAmount: number;
   language: Language;
   currency: Currency;
   onShowToast: (message: string, type: 'success' | 'error' | 'info') => void;
@@ -34,6 +35,7 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
   onRemoveAsset, 
   simulationPrincipal,
   totalRecorded,
+  cashAmount,
   language,
   currency,
   onShowToast
@@ -212,6 +214,8 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
 
   // Calculate utilization
   const utilization = simulationPrincipal > 0 ? (totalRecorded / simulationPrincipal) * 100 : 0;
+  // Calculate cash percentage
+  const cashPercentage = simulationPrincipal > 0 ? (cashAmount / simulationPrincipal * 100).toFixed(1) : '0.0';
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -376,7 +380,7 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
               </tr>
             ) : (
               sortedAssets.map((asset) => {
-                const percentage = totalRecorded > 0 ? (asset.amount / totalRecorded * 100).toFixed(1) : '0.0';
+                const percentage = simulationPrincipal > 0 ? (asset.amount / simulationPrincipal * 100).toFixed(1) : '0.0';
                 const isEditing = editingRow?.id === asset.id;
                 
                 return (
@@ -505,6 +509,42 @@ export const AssetManager: React.FC<AssetManagerProps> = ({
                 </tr>
               )})
             )}
+            {/* Default Cash Row (Unallocated) */}
+            <tr className="bg-slate-50 border-t-2 border-slate-100">
+               <td className="px-2 py-3 align-middle text-center">
+                   <span className="font-bold text-slate-500 italic">{t.cash}</span>
+               </td>
+               <td className="px-2 py-3 align-middle text-center">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider justify-center bg-green-100 text-green-700">
+                    R1
+                  </span>
+               </td>
+               <td className="px-2 py-3 align-middle text-center">
+                   <div className="flex flex-col items-center">
+                      <span className="text-slate-500 font-bold text-xs">
+                        {formatCurrency(cashAmount)}
+                      </span>
+                      <div className="flex items-center gap-2 mt-1 justify-center w-full">
+                         <div className="w-16 bg-slate-200 h-1 rounded-full overflow-hidden">
+                            <div className="bg-slate-400 h-full" style={{ width: `${cashPercentage}%` }}></div>
+                         </div>
+                         <span className="text-[10px] text-slate-400">{cashPercentage}%</span>
+                      </div>
+                   </div>
+               </td>
+               <td className="px-2 py-3 align-middle text-center">
+                   <div className="flex justify-center">
+                     <span className="text-slate-400 font-bold text-xs bg-slate-100 px-1.5 py-0.5 rounded block w-fit">
+                       0.0%
+                     </span>
+                   </div>
+               </td>
+               <td className="px-2 py-3 align-middle text-center">
+                   <div className="flex justify-center">
+                      <Lock className="w-3.5 h-3.5 text-slate-300" />
+                   </div>
+               </td>
+            </tr>
           </tbody>
         </table>
       </div>

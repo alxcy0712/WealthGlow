@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Asset, RiskLevel, OptimizationResult, Language } from "../types";
 
@@ -44,10 +45,12 @@ export const optimizePortfolio = async (
        - Divide it into sections like "Current Status", "Risk Analysis", and "Recommendations".
   `;
 
+  // Upgraded to gemini-3-pro-preview with Thinking Mode for deeper financial analysis
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-pro-preview",
     contents: prompt,
     config: {
+      thinkingConfig: { thinkingBudget: 32768 },
       systemInstruction: `You are a senior financial portfolio manager specializing in asset allocation and risk management. You must communicate in ${langContext}. Your output must be structured and formatted with Markdown. Use Markdown Tables where appropriate for data comparison.`,
       responseMimeType: "application/json",
       responseSchema: {

@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import {
-  AreaChart,
+  ComposedChart,
   Area,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -26,6 +28,7 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
   // Visibility States
   const [showValue, setShowValue] = useState(true);
   const [showWithdrawal, setShowWithdrawal] = useState(true);
+  const [showAnnualWithdrawal, setShowAnnualWithdrawal] = useState(false); // Default off to keep it clean
   
   // Dual Axis State
   const [useDualAxis, setUseDualAxis] = useState(false);
@@ -62,12 +65,14 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
         valueFill: '#34d399',   // Emerald 400
         withdrawStroke: '#ef4444', // Red 500
         withdrawFill: '#f87171',   // Red 400
+        annualFill: '#fbbf24',    // Amber 400
       }
     : {
         valueStroke: '#ef4444', // Red 500
         valueFill: '#f87171',   // Red 400
         withdrawStroke: '#10b981', // Emerald 500
         withdrawFill: '#34d399',   // Emerald 400
+        annualFill: '#fbbf24',    // Amber 400
       };
 
   return (
@@ -103,12 +108,20 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
             {showWithdrawal ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             {t.chartWithdrawal}
           </button>
+
+          <button 
+            onClick={() => setShowAnnualWithdrawal(!showAnnualWithdrawal)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors ${showAnnualWithdrawal ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}
+          >
+            {showAnnualWithdrawal ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            {t.chartAnnualWithdrawal}
+          </button>
         </div>
       </div>
 
       <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
+          <ComposedChart
             data={data}
             margin={{
               top: 10,
@@ -151,7 +164,6 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
 
             <Tooltip 
               formatter={(value: number, name: string) => {
-                // Rename "Portfolio Value" to "Remaining Assets" in Tooltip for clarity as requested
                 const label = name === t.chartPortfolioValue ? t.remainingAssets : name;
                 return [formatCurrency(value), label];
               }}
@@ -191,7 +203,19 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
                 activeDot={{ r: 4, strokeWidth: 0 }}
               />
             )}
-          </AreaChart>
+
+            {showAnnualWithdrawal && (
+              <Bar
+                yAxisId={useDualAxis ? "right" : "left"}
+                dataKey="annualWithdrawal"
+                name={t.chartAnnualWithdrawal}
+                fill={colors.annualFill}
+                radius={[4, 4, 0, 0]}
+                barSize={isMobile ? 8 : 12}
+                animationDuration={1000}
+              />
+            )}
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>

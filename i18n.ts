@@ -45,6 +45,7 @@ export const translations = {
     chartPortfolioValue: "Portfolio Value",
     remainingAssets: "Remaining Assets (End of Year)",
     chartWithdrawal: "Cumulative Withdrawal",
+    chartAnnualWithdrawal: "Annual Withdrawal",
     dualAxis: "Dual Axis",
     errorOptimize: "Failed to generate optimization. Please check your API Key or try again.",
     errorPrincipalTooLow: "Initial Principal cannot be less than Total Recorded Assets.",
@@ -56,6 +57,7 @@ export const translations = {
     yearLabel: "Year",
     modalAnalysisTitle: "Gemini Intelligent Analysis",
     viewAnalysis: "View Analysis",
+    cash: "Cash (Uninvested)",
   },
   zh: {
     appTitle: "财富光辉 AI",
@@ -100,6 +102,7 @@ export const translations = {
     chartPortfolioValue: "投资组合价值",
     remainingAssets: "期末剩余资产",
     chartWithdrawal: "累计提取",
+    chartAnnualWithdrawal: "当年提取金额",
     dualAxis: "双坐标轴",
     errorOptimize: "生成优化方案失败。请检查您的 API 密钥或重试。",
     errorPrincipalTooLow: "初始本金不能小于资产总额。",
@@ -111,5 +114,6 @@ export const translations = {
     yearLabel: "年份",
     modalAnalysisTitle: "Gemini 智能投资分析报告",
     viewAnalysis: "查看分析报告",
+    cash: "现金 (未投资)",
   }
 };

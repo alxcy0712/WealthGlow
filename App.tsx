@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo } from 'react';
 import { Asset, RiskLevel, SimulationYear, OptimizationResult, Language, Currency } from './types';
 import { AssetManager } from './components/AssetManager';
@@ -15,13 +14,13 @@ import { SimpleMarkdown } from './components/SimpleMarkdown';
 const DEFAULT_ASSETS_EN: Asset[] = [
   { id: '1', name: 'Treasury Bonds', riskLevel: RiskLevel.R1, amount: 20000, expectedReturnRate: 3.5 },
   { id: '2', name: 'Global Tech ETF', riskLevel: RiskLevel.R4, amount: 15000, expectedReturnRate: 11.0 },
-  { id: '3', name: 'Dividend Stocks', riskLevel: RiskLevel.R3, amount: 15000, expectedReturnRate: 7.0 },
+  { id: '3', name: 'Dividend Stocks', riskLevel: RiskLevel.R3, amount: 10000, expectedReturnRate: 7.0 },
 ];
 
 const DEFAULT_ASSETS_ZH: Asset[] = [
-  { id: '1', name: '储蓄国债', riskLevel: RiskLevel.R1, amount: 100000, expectedReturnRate: 3.0 },
-  { id: '2', name: '沪深300 ETF', riskLevel: RiskLevel.R3, amount: 80000, expectedReturnRate: 8.5 },
-  { id: '3', name: '科技龙头股', riskLevel: RiskLevel.R5, amount: 50000, expectedReturnRate: 15.0 },
+  { id: '1', name: '储蓄国债', riskLevel: RiskLevel.R1, amount: 40000, expectedReturnRate: 3.0 },
+  { id: '2', name: '沪深300 ETF', riskLevel: RiskLevel.R3, amount: 30000, expectedReturnRate: 8.5 },
+  { id: '3', name: '科技龙头股', riskLevel: RiskLevel.R5, amount: 20000, expectedReturnRate: 15.0 },
 ];
 
 const App: React.FC = () => {
@@ -41,13 +40,14 @@ const App: React.FC = () => {
   const [assets, setAssets] = useState<Asset[]>(DEFAULT_ASSETS_EN);
   
   // Independent simulation principal. Using string to allow flexible input (e.g. "0.")
-  const [simulationPrincipal, setSimulationPrincipal] = useState<string>('50000');
-
+  // Initialized to empty string to show placeholder
+  const [simulationPrincipal, setSimulationPrincipal] = useState<string>('');
+  
   const [years, setYears] = useState<number>(20);
   // Using string to allow flexible input
-  const [annualWithdrawal, setAnnualWithdrawal] = useState<string>('2000');
+  const [annualWithdrawal, setAnnualWithdrawal] = useState<string>('');
   const [withdrawalFrequency, setWithdrawalFrequency] = useState<'yearly' | 'monthly'>('yearly');
-  const [withdrawalIncreaseRate, setWithdrawalIncreaseRate] = useState<string>('0');
+  const [withdrawalIncreaseRate, setWithdrawalIncreaseRate] = useState<string>('');
   
   // AI State
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -58,15 +58,41 @@ const App: React.FC = () => {
   // Derived Values
   const totalRecorded = useMemo(() => assets.reduce((sum, a) => sum + a.amount, 0), [assets]);
   
-  // Parsed numerical values for calculations
-  const principalNum = useMemo(() => parseFloat(simulationPrincipal) || 0, [simulationPrincipal]);
+  // Calculated Default Principal
+  // If input is empty, default to 50k/100k OR total recorded assets, whichever is higher
+  const defaultPrincipal = useMemo(() => {
+    const base = language === 'en' ? 50000 : 100000;
+    return Math.max(totalRecorded, base);
+  }, [language, totalRecorded]);
+
+  // Effective Principal used for calculations
+  const principalNum = useMemo(() => {
+    if (simulationPrincipal === '') return defaultPrincipal;
+    const val = parseFloat(simulationPrincipal);
+    return isNaN(val) ? 0 : val;
+  }, [simulationPrincipal, defaultPrincipal]);
+
+  const cashAmount = Math.max(0, principalNum - totalRecorded);
+
+  // Calculated Default Withdrawal (Approx 4% of effective principal)
+  const defaultWithdrawal = useMemo(() => {
+    return (principalNum * 0.04).toFixed(0);
+  }, [principalNum]);
   
   const withdrawalNum = useMemo(() => {
-    const val = parseFloat(annualWithdrawal) || 0;
+    let val = 0;
+    if (annualWithdrawal === '') {
+       val = parseFloat(defaultWithdrawal);
+    } else {
+       val = parseFloat(annualWithdrawal) || 0;
+    }
     return withdrawalFrequency === 'monthly' ? val * 12 : val;
-  }, [annualWithdrawal, withdrawalFrequency]);
+  }, [annualWithdrawal, defaultWithdrawal, withdrawalFrequency]);
 
-  const rateNum = useMemo(() => parseFloat(withdrawalIncreaseRate) || 0, [withdrawalIncreaseRate]);
+  const rateNum = useMemo(() => {
+    if (withdrawalIncreaseRate === '') return 0;
+    return parseFloat(withdrawalIncreaseRate) || 0;
+  }, [withdrawalIncreaseRate]);
 
   // Handle Language Switch with Default Asset Swap
   const handleLanguageSwitch = () => {
@@ -77,24 +103,33 @@ const App: React.FC = () => {
     const newDefaults = newLang === 'zh' ? DEFAULT_ASSETS_ZH : DEFAULT_ASSETS_EN;
     setAssets(newDefaults);
     
-    // Reset principal to match the new examples sum
-    const newTotal = newDefaults.reduce((sum, a) => sum + a.amount, 0);
-    setSimulationPrincipal(newTotal.toString());
-    
-    // Adjust default annual withdrawal roughly based on currency scale (approx 4%)
-    setAnnualWithdrawal((newTotal * 0.04).toFixed(0));
-    setWithdrawalFrequency('yearly'); // Reset to yearly when switching defaults
+    // Clear inputs to revert to placeholders/defaults
+    setSimulationPrincipal('');
+    setAnnualWithdrawal('');
+    setWithdrawalIncreaseRate('');
+    setWithdrawalFrequency('yearly'); 
   };
 
   // Simulation Logic
   const simulationData = useMemo<SimulationYear[]>(() => {
-    // Determine the starting portfolio by scaling the assets to match the simulationPrincipal
-    let currentAssets = assets.map(a => {
-      // Avoid division by zero
-      const ratio = totalRecorded > 0 ? a.amount / totalRecorded : 0;
-      const startValue = totalRecorded > 0 ? principalNum * ratio : 0;
-      return { ...a, currentValue: startValue };
-    });
+    // Construct full portfolio including the Cash row
+    // We use actual amounts now, not ratios, since the "Cash" row fills the gap
+    let currentAssets = assets.map(a => ({ 
+      ...a, 
+      currentValue: a.amount 
+    }));
+
+    // Add Cash Asset
+    if (cashAmount >= 0) {
+      currentAssets.push({
+        id: 'sys_cash',
+        name: t.cash,
+        riskLevel: RiskLevel.R1,
+        amount: cashAmount,
+        expectedReturnRate: 0, // Cash has 0% return in this model
+        currentValue: cashAmount
+      });
+    }
 
     let cumulativeWithdrawal = 0;
     const data: SimulationYear[] = [];
@@ -104,9 +139,10 @@ const App: React.FC = () => {
       year: 0,
       totalValue: principalNum,
       totalWithdrawn: 0,
-      breakdown: assets.reduce((acc, curr, idx) => ({ 
+      annualWithdrawal: 0,
+      breakdown: currentAssets.reduce((acc, curr) => ({ 
         ...acc, 
-        [curr.name]: currentAssets[idx]?.currentValue || 0 
+        [curr.name]: curr.currentValue 
       }), {})
     });
 
@@ -114,9 +150,6 @@ const App: React.FC = () => {
       let yearTotal = 0;
       
       // Calculate withdrawal for this year.
-      // Formula: Base * (1 + rate)^(year - 1)
-      // Year 1: Base * 1
-      // Year 2: Base * (1 + rate)
       const withdrawalRequired = withdrawalNum * Math.pow(1 + rateNum / 100, y - 1);
       
       let withdrawalRemaining = withdrawalRequired;
@@ -131,7 +164,11 @@ const App: React.FC = () => {
       const totalBeforeWithdrawal = currentAssets.reduce((sum, a) => sum + a.currentValue, 0);
 
       // 2. Apply Withdrawal (Pro-rated across assets)
+      let actualWithdrawalThisYear = 0;
       if (totalBeforeWithdrawal > 0) {
+        // Calculate actual withdrawal amount based on available funds
+        actualWithdrawalThisYear = Math.min(totalBeforeWithdrawal, withdrawalRemaining);
+        
         currentAssets.forEach(asset => {
           const weight = asset.currentValue / totalBeforeWithdrawal;
           const deduction = withdrawalRemaining * weight;
@@ -142,9 +179,10 @@ const App: React.FC = () => {
           }
         });
         
-        cumulativeWithdrawal += Math.min(totalBeforeWithdrawal, withdrawalRemaining);
+        cumulativeWithdrawal += actualWithdrawalThisYear;
       } else {
           cumulativeWithdrawal += 0;
+          actualWithdrawalThisYear = 0;
       }
 
       // 3. Sum up
@@ -159,21 +197,23 @@ const App: React.FC = () => {
         year: y,
         totalValue: Math.max(0, yearTotal),
         totalWithdrawn: cumulativeWithdrawal,
+        annualWithdrawal: actualWithdrawalThisYear,
         breakdown
       });
     }
 
     return data;
-  }, [assets, years, withdrawalNum, rateNum, principalNum, totalRecorded]);
+  }, [assets, years, withdrawalNum, rateNum, principalNum, totalRecorded, cashAmount, t]);
 
   // Handlers
   const handleAddAsset = (asset: Asset) => {
     const newAssets = [...assets, asset];
     setAssets(newAssets);
     
-    // Auto-update principal if total assets exceed current principal
+    // Auto-update principal ONLY if user has entered a value and it's too low.
+    // If input is empty, defaultPrincipal automatically adjusts via the Math.max() logic.
     const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
-    if (newTotal > principalNum) {
+    if (simulationPrincipal !== '' && newTotal > parseFloat(simulationPrincipal)) {
       setSimulationPrincipal(newTotal.toString());
     }
   };
@@ -182,9 +222,8 @@ const App: React.FC = () => {
     const newAssets = assets.map(a => a.id === updatedAsset.id ? updatedAsset : a);
     setAssets(newAssets);
 
-    // Auto-update principal if total assets exceed current principal
     const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
-    if (newTotal > principalNum) {
+    if (simulationPrincipal !== '' && newTotal > parseFloat(simulationPrincipal)) {
       setSimulationPrincipal(newTotal.toString());
     }
   };
@@ -192,16 +231,11 @@ const App: React.FC = () => {
   const handleRemoveAsset = (id: string) => {
     const newAssets = assets.filter(a => a.id !== id);
     setAssets(newAssets);
-
-    // Check if remaining total still exceeds principal (unlikely for remove, but consistent logic)
-    const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
-    if (newTotal > principalNum) {
-      setSimulationPrincipal(newTotal.toString());
-    }
   };
 
   const handlePrincipalBlur = () => {
-    if (principalNum < totalRecorded) {
+    // Only check validation if user has entered an explicit value
+    if (simulationPrincipal !== '' && principalNum < totalRecorded) {
       showToast(t.errorPrincipalTooLow, 'error');
       setSimulationPrincipal(totalRecorded.toString());
     }
@@ -234,7 +268,18 @@ const App: React.FC = () => {
     setError(null);
     setOptimizationResult(null);
     try {
-      const result = await optimizePortfolio(assets, years, withdrawalNum, rateNum, language);
+      // Include Cash in the context sent to Gemini
+      const assetsForOptimization = [
+        ...assets,
+        {
+          id: 'cash-context',
+          name: t.cash,
+          riskLevel: RiskLevel.R1,
+          amount: cashAmount,
+          expectedReturnRate: 0
+        }
+      ];
+      const result = await optimizePortfolio(assetsForOptimization, years, withdrawalNum, rateNum, language);
       setOptimizationResult(result);
       setIsAnalysisModalOpen(true); // Open modal on success
       showToast('Optimization analysis complete', 'success');
@@ -249,9 +294,23 @@ const App: React.FC = () => {
   const applyOptimization = () => {
     if (optimizationResult) {
       const newAssets = optimizationResult.suggestedPortfolio;
+      
+      // Filter out any explicitly named "Cash" assets from the suggestion if we want to enforce the "Cash = Residue" rule,
+      // but Gemini might return "Money Market" etc.
+      // For now, we accept Gemini's suggestions as "Invested Assets".
+      // If Gemini suggests explicit "Cash", it becomes an asset.
+      
       setAssets(newAssets);
       setOptimizationResult(null); 
-      setSimulationPrincipal(newAssets.reduce((sum, a) => sum + a.amount, 0).toString());
+      
+      // Update Principal to match suggestion total if needed, but usually we keep principal same.
+      // Gemini is instructed to match total principal.
+      // If Gemini returns 100k worth of assets and our principal was 100k, then Cash residue is 0.
+      const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
+      if (newTotal > principalNum) {
+         setSimulationPrincipal(newTotal.toString());
+      }
+      
       setIsAnalysisModalOpen(false); // Close modal
       showToast('New portfolio applied successfully', 'success');
     }
@@ -370,11 +429,11 @@ const App: React.FC = () => {
                   <input 
                     type="number"
                     min="0"
-                    placeholder="0"
+                    placeholder={defaultPrincipal.toString()}
                     value={simulationPrincipal}
                     onChange={handlePrincipalChange}
                     onBlur={handlePrincipalBlur}
-                    className="w-full pl-7 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-slate-50/50 hover:bg-white transition-all font-bold text-slate-800 shadow-sm"
+                    className="w-full pl-7 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-slate-50/50 hover:bg-white transition-all font-bold text-slate-800 shadow-sm placeholder:text-slate-400 placeholder:font-normal"
                   />
                 </div>
               </div>
@@ -397,10 +456,10 @@ const App: React.FC = () => {
                       <input 
                         type="number"
                         min="0"
-                        placeholder="0"
+                        placeholder={defaultWithdrawal}
                         value={annualWithdrawal}
                         onChange={handleWithdrawalChange}
-                        className="flex-1 w-full min-w-0 px-2 py-2.5 bg-transparent border-none outline-none text-sm text-slate-900 placeholder:text-slate-300"
+                        className="flex-1 w-full min-w-0 px-2 py-2.5 bg-transparent border-none outline-none text-sm text-slate-900 placeholder:text-slate-400"
                       />
 
                       {/* Divider */}
@@ -436,7 +495,7 @@ const App: React.FC = () => {
                         placeholder="0"
                         value={withdrawalIncreaseRate}
                         onChange={handleRateChange}
-                        className="w-full pl-3 pr-8 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-slate-50/50 hover:bg-white transition-all shadow-sm"
+                        className="w-full pl-3 pr-8 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-slate-50/50 hover:bg-white transition-all shadow-sm placeholder:text-slate-400"
                       />
                       <span className="absolute right-3 top-2.5 text-slate-400 text-sm pointer-events-none group-focus-within:text-indigo-500 transition-colors">
                         %
@@ -478,6 +537,7 @@ const App: React.FC = () => {
           onRemoveAsset={handleRemoveAsset}
           simulationPrincipal={principalNum}
           totalRecorded={totalRecorded}
+          cashAmount={cashAmount}
           language={language}
           currency={currency}
           onShowToast={showToast}

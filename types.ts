@@ -1,3 +1,4 @@
+
 export enum RiskLevel {
   R1 = 'R1', // Conservative
   R2 = 'R2', // Cautious
@@ -18,6 +19,7 @@ export interface SimulationYear {
   year: number;
   totalValue: number;
   totalWithdrawn: number;
+  annualWithdrawal: number;
   breakdown: { [assetName: string]: number };
 }
 
