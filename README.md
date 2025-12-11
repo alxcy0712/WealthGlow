@@ -18,6 +18,7 @@
 
 *   **Portfolio Simulation**: Visualize asset growth over 5-50 years with customizable expected returns.
 *   **Withdrawal Strategy**: Simulate "decumulation" phases with annual/monthly withdrawals and inflation adjustments.
+*   **Annualized Return Calculation**: Automatically calculates the Compound Annual Growth Rate (CAGR) of your portfolio strategy.
 *   **Dual-Axis Visualization**: Compare total portfolio value and annual cash flow on the same chart.
 *   **AI Optimization**: Uses **Gemini 3 Pro** to analyze your portfolio risks and suggest improvements based on your financial goals.
 *   **Multi-Currency & Language**: Full support for English/USD and Chinese/CNY.
@@ -77,6 +78,7 @@ If your previous deployment showed a blank page or crashed, follow these steps e
 6.  **Deploy**: Click **Deploy**.
 
 **Troubleshooting:**
+*   **npm error `ETARGET`**: This usually happens if `@google/genai` version is set to a specific non-existent version. We have set it to `latest` in `package.json` to fix this.
 *   **Blank White Page**: Usually means `index.html` is missing `<script type="module" src="/index.tsx"></script>`. We have fixed this in the latest code.
 *   **"Process is not defined" Error**: This happens if `vite.config.ts` is missing. Ensure that file exists.
 
@@ -91,6 +93,7 @@ If your previous deployment showed a blank page or crashed, follow these steps e
 
 *   **投资组合模拟**：自定义预期回报率，模拟 5-50 年的资产增长趋势。
 *   **提款策略模拟**：支持设置年度/月度支出及通胀增长率，模拟资产消耗阶段。
+*   **年化收益率计算**：自动计算投资策略的复合年化增长率 (CAGR)。
 *   **双坐标轴图表**：在同一图表中对比“总资产价值”与“年度提取金额”。
 *   **AI 智能优化**：利用 **Gemini 3 Pro** 分析您的投资组合风险，并提供具体的优化建议。
 *   **多语言与货币**：完美支持 英文/美元 (USD) 和 中文/人民币 (CNY) 切换。
@@ -150,6 +153,7 @@ If your previous deployment showed a blank page or crashed, follow these steps e
 6.  **点击部署 (Deploy)**。
 
 **常见问题排查：**
+*   **构建报错 `npm error ETARGET`？** 这是因为依赖包版本号写死导致的问题。我们在最新的 `package.json` 中已将 `@google/genai` 设为 `latest`，请重新拉取代码并推送。
 *   **打开是白屏？** 通常是因为 `index.html` 里缺了入口脚本。最新的代码中已修复此问题。
 *   **报错 "process is not defined"？** 说明 `vite.config.ts` 没有生效或丢失，请检查文件是否存在。
 

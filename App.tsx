@@ -4,7 +4,7 @@ import { Asset, RiskLevel, SimulationYear, OptimizationResult, Language, Currenc
 import { AssetManager } from './components/AssetManager';
 import { SimulationChart } from './components/SimulationChart';
 import { optimizePortfolio } from './services/gemini';
-import { Settings, Sparkles, TrendingUp, AlertTriangle, ArrowRight, Wallet, Languages, PlayCircle, BarChart3, FileText, ChevronDown } from 'lucide-react';
+import { Settings, Sparkles, TrendingUp, AlertTriangle, ArrowRight, Wallet, Languages, PlayCircle, BarChart3, FileText, ChevronDown, Percent } from 'lucide-react';
 import { translations } from './i18n';
 import { Toast, ToastType } from './components/Toast';
 import { Modal } from './components/Modal';
@@ -205,13 +205,23 @@ const App: React.FC = () => {
     return data;
   }, [assets, years, withdrawalNum, rateNum, principalNum, totalRecorded, cashAmount, t]);
 
+  // Derived CAGR
+  const cagr = useMemo(() => {
+    if (principalNum <= 0) return 0;
+    const finalVal = simulationData[simulationData.length - 1].totalValue;
+    // Simple CAGR based on start and end value
+    // Note: This CAGR reflects the growth AFTER withdrawals, so it might be negative if withdrawals > growth
+    // For pure investment performance, we would need to track growth without withdrawal, but for "Wealth Projection", this is correct net growth.
+    const val = (Math.pow(finalVal / principalNum, 1 / years) - 1) * 100;
+    return isNaN(val) ? 0 : val;
+  }, [simulationData, principalNum, years]);
+
   // Handlers
   const handleAddAsset = (asset: Asset) => {
     const newAssets = [...assets, asset];
     setAssets(newAssets);
     
     // Auto-update principal ONLY if user has entered a value and it's too low.
-    // If input is empty, defaultPrincipal automatically adjusts via the Math.max() logic.
     const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
     if (simulationPrincipal !== '' && newTotal > parseFloat(simulationPrincipal)) {
       setSimulationPrincipal(newTotal.toString());
@@ -234,7 +244,6 @@ const App: React.FC = () => {
   };
 
   const handlePrincipalBlur = () => {
-    // Only check validation if user has entered an explicit value
     if (simulationPrincipal !== '' && principalNum < totalRecorded) {
       showToast(t.errorPrincipalTooLow, 'error');
       setSimulationPrincipal(totalRecorded.toString());
@@ -243,7 +252,6 @@ const App: React.FC = () => {
 
   const handlePrincipalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    // Allow empty string or non-negative numbers
     if (val === '' || parseFloat(val) >= 0) {
       setSimulationPrincipal(val);
     }
@@ -268,7 +276,6 @@ const App: React.FC = () => {
     setError(null);
     setOptimizationResult(null);
     try {
-      // Include Cash in the context sent to Gemini
       const assetsForOptimization = [
         ...assets,
         {
@@ -281,7 +288,7 @@ const App: React.FC = () => {
       ];
       const result = await optimizePortfolio(assetsForOptimization, years, withdrawalNum, rateNum, language);
       setOptimizationResult(result);
-      setIsAnalysisModalOpen(true); // Open modal on success
+      setIsAnalysisModalOpen(true);
       showToast('Optimization analysis complete', 'success');
     } catch (err) {
       setError(t.errorOptimize);
@@ -294,24 +301,15 @@ const App: React.FC = () => {
   const applyOptimization = () => {
     if (optimizationResult) {
       const newAssets = optimizationResult.suggestedPortfolio;
-      
-      // Filter out any explicitly named "Cash" assets from the suggestion if we want to enforce the "Cash = Residue" rule,
-      // but Gemini might return "Money Market" etc.
-      // For now, we accept Gemini's suggestions as "Invested Assets".
-      // If Gemini suggests explicit "Cash", it becomes an asset.
-      
       setAssets(newAssets);
       setOptimizationResult(null); 
       
-      // Update Principal to match suggestion total if needed, but usually we keep principal same.
-      // Gemini is instructed to match total principal.
-      // If Gemini returns 100k worth of assets and our principal was 100k, then Cash residue is 0.
       const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
       if (newTotal > principalNum) {
          setSimulationPrincipal(newTotal.toString());
       }
       
-      setIsAnalysisModalOpen(false); // Close modal
+      setIsAnalysisModalOpen(false);
       showToast('New portfolio applied successfully', 'success');
     }
   };
@@ -403,7 +401,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content: Single Column Stack */}
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
         {/* ================= 1. SIMULATION CONFIG ================= */}
@@ -440,19 +438,12 @@ const App: React.FC = () => {
 
               {/* Col 2: Withdrawal Settings */}
               <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 gap-4">
-                 {/* Amount & Frequency - UNIFIED CONTAINER FOR SAFARI FIX */}
                  <div className="space-y-1.5 sm:col-span-1">
                     <label className="block text-sm font-medium text-slate-700">{t.withdrawalLabel}</label>
-                    
-                    {/* Unified Container */}
                     <div className="flex items-center w-full border border-slate-300 rounded-xl bg-slate-50/50 hover:bg-white focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all shadow-sm overflow-hidden">
-                      
-                      {/* Currency Symbol */}
                       <div className="pl-3 text-slate-400 text-sm pointer-events-none">
                         {currency === 'USD' ? '$' : '¥'}
                       </div>
-                      
-                      {/* Input Field */}
                       <input 
                         type="number"
                         min="0"
@@ -461,11 +452,7 @@ const App: React.FC = () => {
                         onChange={handleWithdrawalChange}
                         className="flex-1 w-full min-w-0 px-2 py-2.5 bg-transparent border-none outline-none text-sm text-slate-900 placeholder:text-slate-400"
                       />
-
-                      {/* Divider */}
                       <div className="w-px h-5 bg-slate-200 mx-1"></div>
-
-                      {/* Frequency Selector */}
                       <div className="relative flex items-center pr-2">
                          <select 
                            value={withdrawalFrequency}
@@ -482,7 +469,6 @@ const App: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Increase Rate */}
                   <div className="space-y-1.5 sm:col-span-1">
                      <label className="block text-sm font-medium text-slate-700 truncate" title={t.withdrawalIncreaseRate}>
                       {t.withdrawalIncreaseRate}
@@ -544,7 +530,8 @@ const App: React.FC = () => {
         />
 
         {/* ================= 3. STATS CARDS ================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Card 1: Final Value */}
               <div className={`rounded-2xl p-6 text-white shadow-lg shadow-emerald-500/10 flex flex-col justify-between relative overflow-hidden ${
                 language === 'zh' ? 'bg-gradient-to-br from-red-500 to-red-600' : 'bg-gradient-to-br from-emerald-500 to-emerald-600'
               }`}>
@@ -563,14 +550,10 @@ const App: React.FC = () => {
                    <div className="text-xs bg-white/20 px-2.5 py-1 rounded-full text-white font-medium backdrop-blur-sm">
                      {t.afterYears.replace('{0}', years.toString())}
                    </div>
-                   <div className="text-xs text-white/80">
-                      {t.netGrowth}: {principalNum > 0 
-                          ? ((Math.pow(simulationData[simulationData.length-1].totalValue / principalNum, 1/years) - 1) * 100).toFixed(2) 
-                          : '0.00'}%
-                   </div>
                  </div>
               </div>
               
+              {/* Card 2: Total Withdrawn */}
               <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
                  <div className="absolute top-0 right-0 p-4 opacity-5">
                     <BarChart3 className="w-24 h-24 text-slate-800" />
@@ -584,6 +567,25 @@ const App: React.FC = () => {
                  <div className="mt-6">
                    <div className="mt-2 text-xs text-slate-400 font-medium">
                      {t.passiveIncome}
+                   </div>
+                 </div>
+              </div>
+
+              {/* Card 3: Annualized Return (CAGR) */}
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                 <div className="absolute top-0 right-0 p-4 opacity-5">
+                    <Percent className="w-24 h-24 text-indigo-800" />
+                 </div>
+                 <div>
+                    <div className="text-sm text-slate-500 mb-3 font-medium tracking-wide uppercase">{t.netGrowth}</div>
+                    <div className={`text-3xl font-bold tracking-tight ${cagr >= 0 ? 'text-indigo-600' : 'text-slate-500'}`}>
+                        {cagr.toFixed(2)}%
+                    </div>
+                 </div>
+                 <div className="mt-6">
+                   <div className="mt-2 text-xs text-slate-400 font-medium flex items-center gap-1">
+                     <TrendingUp className="w-3 h-3" />
+                     Realized CAGR (Net)
                    </div>
                  </div>
               </div>
@@ -617,8 +619,6 @@ const App: React.FC = () => {
 
       {/* ================= FLOATING ACTION WIDGET ================= */}
       <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end space-y-3 group">
-        
-        {/* History Box (Pops up on hover if result exists) */}
         {!isAnalysisModalOpen && optimizationResult && (
           <div className="bg-white p-3 rounded-xl shadow-xl border border-slate-100 transform translate-y-4 opacity-0 invisible group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible transition-all duration-300 w-48 text-right">
              <div className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide flex items-center justify-end gap-1">
@@ -633,7 +633,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* FAB */}
         <button 
           onClick={handleOptimize}
           disabled={isOptimizing}
