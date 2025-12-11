@@ -9,12 +9,7 @@ export const optimizePortfolio = async (
   withdrawalIncreaseRate: number,
   language: Language
 ): Promise<OptimizationResult> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API Key is missing.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   const langContext = language === 'zh' ? 'Chinese (Simplified)' : 'English';
   const currencyContext = language === 'zh' ? 'CNY (RMB)' : 'USD';

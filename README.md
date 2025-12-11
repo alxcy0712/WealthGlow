@@ -1,8 +1,7 @@
-
 # WealthGlow AI / 财富光辉 AI
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![React](https://img.shields.io/badge/React-19-blue)
+![React](https://img.shields.io/badge/React-18-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![Gemini](https://img.shields.io/badge/AI-Gemini%20Pro-orange)
 
@@ -26,8 +25,8 @@
 
 ### 🛠 Tech Stack
 
-*   **Frontend**: React 19, TypeScript, Vite
-*   **Styling**: Tailwind CSS
+*   **Frontend**: React, TypeScript, Vite
+*   **Styling**: Tailwind CSS (via CDN)
 *   **Charts**: Recharts
 *   **AI Integration**: Google GenAI SDK (`@google/genai`)
 *   **Icons**: Lucide React
@@ -46,7 +45,8 @@
     ```
 
 3.  **Configure Environment Variables**
-    Create a `.env` file in the root directory and add your Google Gemini API key:
+    Create a `.env` file in the root directory and add your Google Gemini API key.
+    **Note**: The key name must be exactly `API_KEY`.
     ```env
     API_KEY=your_google_ai_studio_api_key_here
     ```
@@ -57,36 +57,28 @@
     npm run dev
     ```
 
-### ☁️ Deployment on Vercel
+### ☁️ Deployment on Vercel (Step-by-Step)
 
-This project is optimized for deployment on Vercel. Follow these steps carefully:
+If your previous deployment showed a blank page or crashed, follow these steps exactly.
 
-#### Option 1: Deploy via Vercel Dashboard (Recommended)
+1.  **Push Code to GitHub**: Make sure `vite.config.ts` and `package.json` are included in your repository.
+2.  **Log in to Vercel**: Go to [vercel.com](https://vercel.com) and create a new project.
+3.  **Import Repository**: Select your `wealthglow-ai` repo.
+4.  **Configure Project**:
+    *   **Framework Preset**: Select **Vite**.
+    *   **Root Directory**: `./` (Default)
+    *   **Build Command**: `vite build` (Default)
+    *   **Output Directory**: `dist` (Default)
+5.  **⚠️ CRITICAL: Environment Variables**:
+    *   Go to the **Environment Variables** section.
+    *   Add a variable named **`API_KEY`**.
+    *   Paste your Google Gemini API key as the value.
+    *   *Why?* The `vite.config.ts` file in this project is specially configured to read this variable during the build process and embed it into the app safely.
+6.  **Deploy**: Click **Deploy**.
 
-1.  **Push to GitHub**: Ensure your code is pushed to a GitHub repository.
-2.  **Log in to Vercel**: Go to [vercel.com](https://vercel.com) and sign in.
-3.  **Add New Project**: Click "Add New..." -> "Project".
-4.  **Import Repository**: Select your `wealthglow-ai` repository and click "Import".
-5.  **Configure Project**:
-    *   **Framework Preset**: Vercel usually detects "Vite" automatically. If not, select "Vite".
-    *   **Root Directory**: Leave as `./` (unless your code is in a subfolder).
-6.  **⚠️ CRITICAL STEP: Environment Variables**:
-    *   Expand the **"Environment Variables"** section.
-    *   **Key**: `API_KEY`
-    *   **Value**: Paste your Google Gemini API Key (starts with `AIza...`).
-    *   Click **Add**.
-7.  **Deploy**: Click the **"Deploy"** button.
-8.  **Wait & Launch**: Wait for the build to complete. Once finished, you will get a live URL (e.g., `https://wealthglow-ai.vercel.app`).
-
-#### Option 2: Deploy via CLI
-
-1.  Install Vercel CLI: `npm i -g vercel`
-2.  Run `vercel login`.
-3.  Run `vercel` in your project root.
-4.  Follow the prompts. When asked "Want to modify these settings?", answer **No** (defaults are usually fine for Vite).
-5.  **Set Environment Variable**:
-    Go to the Vercel dashboard for your new project, navigate to **Settings > Environment Variables**, and add `API_KEY`.
-6.  Trigger a redeploy if the app doesn't work immediately.
+**Troubleshooting:**
+*   **Blank White Page**: Usually means `index.html` is missing `<script type="module" src="/index.tsx"></script>`. We have fixed this in the latest code.
+*   **"Process is not defined" Error**: This happens if `vite.config.ts` is missing. Ensure that file exists.
 
 ---
 
@@ -106,8 +98,8 @@ This project is optimized for deployment on Vercel. Follow these steps carefully
 
 ### 🛠 技术栈
 
-*   **前端框架**: React 19, TypeScript, Vite
-*   **样式库**: Tailwind CSS
+*   **前端框架**: React, TypeScript, Vite
+*   **样式库**: Tailwind CSS (CDN 引入)
 *   **图表库**: Recharts
 *   **AI 集成**: Google GenAI SDK (`@google/genai`)
 *   **图标库**: Lucide React
@@ -126,7 +118,8 @@ This project is optimized for deployment on Vercel. Follow these steps carefully
     ```
 
 3.  **配置环境变量**
-    在项目根目录创建一个 `.env` 文件，并添加你的 Google Gemini API 密钥：
+    在项目根目录创建一个 `.env` 文件，并添加你的 Google Gemini API 密钥。
+    **注意**：变量名必须是 `API_KEY`。
     ```env
     API_KEY=你的_google_ai_studio_api_key
     ```
@@ -137,32 +130,28 @@ This project is optimized for deployment on Vercel. Follow these steps carefully
     npm run dev
     ```
 
-### ☁️ 如何在 Vercel 上发布 (详细步骤)
+### ☁️ 如何在 Vercel 上发布 (保姆级教程)
 
-本项目非常适合部署在 Vercel 上。请按照以下步骤操作：
+如果你之前的发布出现了白屏或报错，请严格按照以下步骤操作。
 
-#### 方法 1：通过 Vercel 网页控制台部署 (推荐)
+1.  **上传代码**：确保 `vite.config.ts` 和 `package.json` 已经上传到了 GitHub。
+2.  **新建项目**：在 Vercel 控制台点击 "Add New Project"。
+3.  **导入仓库**：选择你的 `wealthglow-ai` 仓库。
+4.  **项目配置**：
+    *   **Framework Preset (框架)**：选择 **Vite**。
+    *   **Root Directory**: 保持默认 `./`。
+    *   **Build Command**: 保持默认 `vite build`。
+    *   **Output Directory**: 保持默认 `dist`。
+5.  **⚠️ 关键步骤：配置环境变量**：
+    *   找到 **Environment Variables** 区域。
+    *   Key (键名) 填写：**`API_KEY`**
+    *   Value (值) 填写：你的 Google Gemini API 密钥。
+    *   *原理解释*：本项目包含特殊的 `vite.config.ts` 配置，它会在构建（Build）过程中自动读取这个变量并注入到代码中，解决 "process is not defined" 的常见报错。
+6.  **点击部署 (Deploy)**。
 
-1.  **上传代码到 GitHub**：确保你的代码已经提交并推送到 GitHub 仓库中。
-2.  **登录 Vercel**：访问 [vercel.com](https://vercel.com) 并使用 GitHub 账号登录。
-3.  **新建项目**：点击控制台右上角的 "Add New..." -> "Project"。
-4.  **导入仓库**：在列表中找到你的 `wealthglow-ai` 仓库，点击 "Import" 按钮。
-5.  **配置项目**：
-    *   **Framework Preset (框架预设)**：Vercel 通常会自动检测为 "Vite"。如果没有，请手动选择。
-    *   **Root Directory (根目录)**：保持默认 `./` 即可。
-6.  **⚠️ 关键步骤：配置环境变量 (Environment Variables)**：
-    *   展开 **"Environment Variables"** 选项卡。
-    *   **Key (键)**: 输入 `API_KEY`
-    *   **Value (值)**: 粘贴你的 Google Gemini API 密钥 (以 `AIza` 开头)。
-    *   点击 **Add** 按钮保存。
-    *   *注意：如果不配置这个，AI 优化功能将无法在以后的线上版本中使用。*
-7.  **点击部署 (Deploy)**：点击蓝色的 **"Deploy"** 按钮。
-8.  **完成**：等待几十秒构建完成。屏幕上会出现满屏庆祝动画，你可以点击预览图访问你的在线应用（例如 `https://wealthglow-ai.vercel.app`）。
-
-#### 方法 2：常见问题排查
-
-*   **构建失败？** 确保你的 `package.json` 中包含 `build` 脚本 (通常是 `vite build`)。
-*   **AI 功能报错？** 请检查 Vercel 后台的 Environment Variables 中是否正确填写了 `API_KEY`，并且密钥本身是有效的。修改环境变量后，通常需要去 "Deployments" 页面重新 Redeploy 一次才能生效。
+**常见问题排查：**
+*   **打开是白屏？** 通常是因为 `index.html` 里缺了入口脚本。最新的代码中已修复此问题。
+*   **报错 "process is not defined"？** 说明 `vite.config.ts` 没有生效或丢失，请检查文件是否存在。
 
 ---
 
