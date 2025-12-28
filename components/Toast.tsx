@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { X, AlertCircle, CheckCircle, Info } from 'lucide-react';
 
@@ -29,7 +30,7 @@ export const Toast: React.FC<ToastProps> = ({ message, type, onClose, duration =
   };
 
   return (
-    <div className={`fixed top-0 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg border ${styles[type]} animate-slide-down min-w-[320px] max-w-[90vw]`}>
+    <div className={`fixed top-0 left-1/2 transform -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg border ${styles[type]} animate-slide-down min-w-[320px] max-w-[90vw]`}>
       {icons[type]}
       <span className="font-medium text-sm flex-1">{message}</span>
       <button 
