@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Asset, RiskLevel, SimulationYear, OptimizationResult, Language, Currency } from './types';
 import { AssetManager } from './components/AssetManager';
 import { SimulationChart } from './components/SimulationChart';
@@ -14,15 +14,15 @@ import { YieldCalculator } from './components/YieldCalculator';
 
 // Default Data Sets
 const DEFAULT_ASSETS_EN: Asset[] = [
-  { id: '1', name: 'Treasury Bonds', riskLevel: RiskLevel.R1, amount: 20000, expectedReturnRate: 3.5 },
-  { id: '2', name: 'Global Tech ETF', riskLevel: RiskLevel.R4, amount: 15000, expectedReturnRate: 11.0 },
-  { id: '3', name: 'Dividend Stocks', riskLevel: RiskLevel.R3, amount: 10000, expectedReturnRate: 7.0 },
+  { id: '1', name: 'Treasury Bonds', location: 'Bank A', riskLevel: RiskLevel.R1, amount: 20000, expectedReturnRate: 3.5 },
+  { id: '2', name: 'Global Tech ETF', location: 'Broker X', riskLevel: RiskLevel.R4, amount: 15000, expectedReturnRate: 11.0 },
+  { id: '3', name: 'Dividend Stocks', location: 'Broker X', riskLevel: RiskLevel.R3, amount: 10000, expectedReturnRate: 7.0 },
 ];
 
 const DEFAULT_ASSETS_ZH: Asset[] = [
-  { id: '1', name: '储蓄国债', riskLevel: RiskLevel.R1, amount: 40000, expectedReturnRate: 3.0 },
-  { id: '2', name: '沪深300 ETF', riskLevel: RiskLevel.R3, amount: 30000, expectedReturnRate: 8.5 },
-  { id: '3', name: '科技龙头股', riskLevel: RiskLevel.R5, amount: 20000, expectedReturnRate: 15.0 },
+  { id: '1', name: '储蓄国债', location: '招商银行', riskLevel: RiskLevel.R1, amount: 40000, expectedReturnRate: 3.0 },
+  { id: '2', name: '沪深300 ETF', location: '支付宝', riskLevel: RiskLevel.R3, amount: 30000, expectedReturnRate: 8.5 },
+  { id: '3', name: '科技龙头股', location: '微信', riskLevel: RiskLevel.R5, amount: 20000, expectedReturnRate: 15.0 },
 ];
 
 const App: React.FC = () => {
@@ -30,6 +30,19 @@ const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>('zh');
   const currency: Currency = language === 'en' ? 'USD' : 'CNY';
   const t = translations[language];
+
+  // Locations state
+  const [availableLocations, setAvailableLocations] = useState<string[]>(() => {
+    const saved = localStorage.getItem('wealthglow_locations');
+    if (saved) return JSON.parse(saved);
+    return language === 'zh' 
+      ? ['微信', '支付宝', '招商银行'] 
+      : ['Bank of America', 'Chase', 'Vanguard', 'Fidelity', 'Coinbase'];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('wealthglow_locations', JSON.stringify(availableLocations));
+  }, [availableLocations]);
 
   // Toast State
   const [toast, setToast] = useState<{message: string, type: ToastType} | null>(null);
@@ -100,6 +113,12 @@ const App: React.FC = () => {
     const newDefaults = newLang === 'zh' ? DEFAULT_ASSETS_ZH : DEFAULT_ASSETS_EN;
     setAssets(newDefaults);
     
+    // Also reset locations to new language defaults if not customized
+    const newLocs = newLang === 'zh' 
+      ? ['微信', '支付宝', '招商银行'] 
+      : ['Bank of America', 'Chase', 'Vanguard', 'Fidelity', 'Coinbase'];
+    setAvailableLocations(newLocs);
+    
     setSimulationPrincipal('');
     setAnnualWithdrawal('');
     setWithdrawalIncreaseRate('');
@@ -117,6 +136,7 @@ const App: React.FC = () => {
       currentAssets.push({
         id: 'sys_cash',
         name: t.cash,
+        location: '-',
         riskLevel: RiskLevel.R1,
         amount: cashAmount,
         expectedReturnRate: 0,
@@ -210,6 +230,11 @@ const App: React.FC = () => {
     setAssets(assets.filter(a => a.id !== id));
   };
 
+  const handleClearAssets = () => {
+    setAssets([]);
+    showToast(language === 'zh' ? '已清空所有资产' : 'All assets cleared', 'info');
+  };
+
   const handlePrincipalBlur = () => {
     if (simulationPrincipal !== '' && principalNum < totalRecorded) {
       showToast(t.errorPrincipalTooLow, 'error');
@@ -245,7 +270,7 @@ const App: React.FC = () => {
     try {
       const assetsForOptimization = [
         ...assets,
-        { id: 'cash-context', name: t.cash, riskLevel: RiskLevel.R1, amount: cashAmount, expectedReturnRate: 0 }
+        { id: 'cash-context', name: t.cash, location: '-', riskLevel: RiskLevel.R1, amount: cashAmount, expectedReturnRate: 0 }
       ];
       const result = await optimizePortfolio(assetsForOptimization, years, withdrawalNum, rateNum, language);
       setOptimizationResult(result);
@@ -398,9 +423,6 @@ const App: React.FC = () => {
               <h2 className="text-md sm:text-lg font-bold text-slate-800 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-indigo-500" /> {t.simulationConfig}
               </h2>
-              <div className="hidden sm:block bg-indigo-50 text-indigo-600 text-xs px-2 py-1 rounded-md font-medium">
-                {t.inputParameters}
-              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -506,9 +528,12 @@ const App: React.FC = () => {
         {/* 2. ASSETS MANAGER */}
         <AssetManager 
           assets={assets} 
+          availableLocations={availableLocations}
+          onUpdateLocations={setAvailableLocations}
           onAddAsset={handleAddAsset}
           onUpdateAsset={handleUpdateAsset}
           onRemoveAsset={handleRemoveAsset}
+          onClearAssets={handleClearAssets}
           simulationPrincipal={principalNum}
           totalRecorded={totalRecorded}
           cashAmount={cashAmount}

@@ -10,6 +10,7 @@ export enum RiskLevel {
 export interface Asset {
   id: string;
   name: string;
+  location: string; // New: Storage location (e.g., "Bank A", "Broker B")
   riskLevel: RiskLevel;
   amount: number;
   expectedReturnRate: number; // Percentage, e.g., 5.5 for 5.5%
