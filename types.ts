@@ -30,3 +30,12 @@ export interface OptimizationResult {
 
 export type Language = 'en' | 'zh';
 export type Currency = 'USD' | 'CNY';
+
+export type AIProvider = 'gemini' | 'deepseek';
+
+export interface AIConfig {
+  provider: AIProvider;
+  apiKey: string;
+  model: string;
+  useCustom: boolean;
+}

@@ -1,6 +1,23 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Asset, RiskLevel, OptimizationResult, Language } from "../types";
+import { Asset, RiskLevel, OptimizationResult, Language, AIConfig } from "../types";
+
+const getAIConfig = (): AIConfig => {
+  const stored = localStorage.getItem('wealthglow_ai_config');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error("Failed to parse AI config", e);
+    }
+  }
+  return {
+    provider: 'gemini',
+    apiKey: '',
+    model: '',
+    useCustom: false
+  };
+};
 
 export const optimizePortfolio = async (
   currentAssets: Asset[],
@@ -9,8 +26,7 @@ export const optimizePortfolio = async (
   withdrawalIncreaseRate: number,
   language: Language
 ): Promise<OptimizationResult> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
+  const config = getAIConfig();
   const langContext = language === 'zh' ? 'Chinese (Simplified)' : 'English';
   const currencyContext = language === 'zh' ? 'CNY (RMB)' : 'USD';
 
@@ -33,28 +49,46 @@ export const optimizePortfolio = async (
     1. Analyze the current portfolio's risk and potential sustainability given the withdrawal rate and its annual increase.
     2. Suggest a modified portfolio structure (add/remove/edit assets) to better achieve stable growth while surviving the increasing withdrawals.
     3. Ensure the Total Principal of the suggested portfolio matches the Total Principal of the current portfolio.
-    4. Provide the result in a structured JSON format. 
+    4. Provide the result in a structured JSON format with two fields: 'analysis' (Markdown string) and 'suggestedPortfolio' (Array of asset objects).
+       
        **CRITICAL**: The 'analysis' field MUST be written in ${langContext} using **Markdown** formatting. 
        - Use **tables** to compare "Before vs After" or "Asset Allocation".
        - Use headers (###), bullet points (-), and bold text (**) for readability.
        - Divide it into sections like "Current Status", "Risk Analysis", and "Recommendations".
+       
+       **JSON Structure Example**:
+       {
+         "analysis": "Markdown text here...",
+         "suggestedPortfolio": [
+           { "name": "Asset A", "riskLevel": "R3", "amount": 1000, "expectedReturnRate": 5.0 },
+           ...
+         ]
+       }
   `;
 
-  // Upgraded to gemini-3-pro-preview with Thinking Mode for deeper financial analysis
+  if (config.useCustom && config.provider === 'deepseek') {
+    return callDeepSeek(prompt, config.apiKey, config.model || 'deepseek-chat', language);
+  } else {
+    // Default to Gemini (using internal key or custom key if provided)
+    return callGemini(prompt, config.useCustom ? config.apiKey : (process.env.API_KEY || ''), config.model || "gemini-3-pro-preview", language);
+  }
+};
+
+const callGemini = async (prompt: string, apiKey: string, model: string, language: Language): Promise<OptimizationResult> => {
+  const ai = new GoogleGenAI({ apiKey });
+  const langContext = language === 'zh' ? 'Chinese (Simplified)' : 'English';
+
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: model,
     contents: prompt,
     config: {
-      thinkingConfig: { thinkingBudget: 32768 },
-      systemInstruction: `You are a senior financial portfolio manager specializing in asset allocation and risk management. You must communicate in ${langContext}. Your output must be structured and formatted with Markdown. Use Markdown Tables where appropriate for data comparison.`,
+      thinkingConfig: model.includes('pro') ? { thinkingBudget: 32768 } : undefined,
+      systemInstruction: `You are a senior financial portfolio manager. You must communicate in ${langContext}. Output MUST be JSON with 'analysis' and 'suggestedPortfolio' fields.`,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          analysis: {
-            type: Type.STRING,
-            description: `A detailed analysis in ${langContext} formatted in Markdown, ideally including tables.`
-          },
+          analysis: { type: Type.STRING },
           suggestedPortfolio: {
             type: Type.ARRAY,
             items: {
@@ -75,24 +109,48 @@ export const optimizePortfolio = async (
   });
 
   const jsonText = response.text;
-  if (!jsonText) {
-      throw new Error("No response from AI");
+  if (!jsonText) throw new Error("No response from AI");
+
+  const result = JSON.parse(jsonText);
+  return {
+    analysis: result.analysis,
+    suggestedPortfolio: result.suggestedPortfolio.map((item: any, index: number) => ({
+      ...item,
+      id: `suggested-${index}-${Date.now()}`
+    }))
+  };
+};
+
+const callDeepSeek = async (prompt: string, apiKey: string, model: string, language: Language): Promise<OptimizationResult> => {
+  const response = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        { role: "system", content: "You are a senior financial portfolio manager. You must output JSON only." },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" }
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || "DeepSeek API Error");
   }
 
-  try {
-      const result = JSON.parse(jsonText);
-      // Map basic objects back to our Asset type (adding IDs if missing in AI response)
-      const suggestedAssets: Asset[] = result.suggestedPortfolio.map((item: any, index: number) => ({
-          ...item,
-          id: `suggested-${index}-${Date.now()}`
-      }));
-      
-      return {
-          analysis: result.analysis,
-          suggestedPortfolio: suggestedAssets
-      };
-  } catch (e) {
-      console.error("Failed to parse AI response", e);
-      throw new Error("Failed to parse AI optimization results.");
-  }
+  const data = await response.json();
+  const result = JSON.parse(data.choices[0].message.content);
+  
+  return {
+    analysis: result.analysis,
+    suggestedPortfolio: (result.suggestedPortfolio || []).map((item: any, index: number) => ({
+      ...item,
+      id: `suggested-${index}-${Date.now()}`
+    }))
+  };
 };
