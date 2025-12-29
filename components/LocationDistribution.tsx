@@ -106,9 +106,9 @@ export const LocationDistribution: React.FC<LocationDistributionProps> = ({ asse
   );
 
   return (
-    <div className={`flex flex-col md:flex-row gap-6 md:gap-5 items-stretch py-2 px-1 relative ${!isMobile ? 'md:h-[600px]' : 'min-h-[450px]'}`}>
-       {/* 左侧：饼图与列表 - 设置为固定的百分比，为 Gap 留出空间 */}
-       <div className="w-full md:w-[56%] flex flex-col items-center h-full overflow-hidden flex-shrink-0">
+    <div className={`flex flex-col md:flex-row gap-6 md:gap-5 items-stretch py-2 px-4 relative ${!isMobile ? 'md:h-[600px]' : 'min-h-[450px]'}`}>
+       {/* 左侧：饼图与列表 - 设置为 55%，为 Gap 和右侧留出空间 */}
+       <div className="w-full md:w-[55%] flex flex-col items-center h-full overflow-hidden flex-shrink-0">
           <div className="w-full flex justify-center pb-2 flex-shrink-0">
               <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100/50 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
                   <BarChart3 className="w-3 h-3 text-indigo-500" /> 
@@ -180,9 +180,9 @@ export const LocationDistribution: React.FC<LocationDistributionProps> = ({ asse
           )}
        </div>
 
-       {/* 右侧：详情面板 - 使用 md:flex-1 自适应剩余空间，确保 rounded-3xl 完全显示，不被截断 */}
+       {/* 右侧：详情面板 - 修正圆角截断，增加内边距 */}
        {!isMobile && (
-          <div className="md:flex-1 h-full bg-slate-50/50 rounded-3xl border border-slate-100 p-5 md:pl-3 md:pr-4 shadow-inner overflow-hidden flex-shrink-0 md:mr-1">
+          <div className="md:flex-1 h-full bg-slate-50/50 rounded-3xl border border-slate-100 p-5 md:pl-4 md:pr-4 shadow-inner overflow-hidden flex-shrink-0 md:mr-1">
              {activeLoc ? (
                 renderDetails()
              ) : (
