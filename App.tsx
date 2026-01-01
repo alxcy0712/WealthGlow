@@ -167,9 +167,14 @@ const App: React.FC = () => {
     const newAssets = [...assets, asset];
     setAssets(newAssets);
     
-    // Sync single new asset location
-    if (asset.location && !availableLocations.includes(asset.location)) {
-      setAvailableLocations(prev => [...prev, asset.location]);
+    // Sync location - Case-insensitive check to prevent duplicates
+    if (asset.location && asset.location !== '-') {
+      setAvailableLocations(prev => {
+        if (!prev.some(l => l.toLowerCase() === asset.location.toLowerCase())) {
+          return [...prev, asset.location];
+        }
+        return prev;
+      });
     }
 
     const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
@@ -184,11 +189,24 @@ const App: React.FC = () => {
 
     const newLocsFromBatch = newAssetsBatch
       .map(a => a.location)
-      .filter(loc => loc && loc !== '-' && !availableLocations.includes(loc));
+      .filter(loc => {
+        if (!loc || loc === '-') return false;
+        // Check uniqueness within the batch and existing locations
+        return !availableLocations.some(l => l.toLowerCase() === loc.toLowerCase());
+      });
     
     if (newLocsFromBatch.length > 0) {
       const uniqueNewLocs = Array.from(new Set(newLocsFromBatch));
-      setAvailableLocations(prev => [...prev, ...uniqueNewLocs]);
+      // One final check to ensure case-insensitive uniqueness against state
+      setAvailableLocations(prev => {
+        const result = [...prev];
+        uniqueNewLocs.forEach(loc => {
+          if (!result.some(l => l.toLowerCase() === loc.toLowerCase())) {
+            result.push(loc);
+          }
+        });
+        return result;
+      });
     }
 
     const newTotal = combined.reduce((sum, a) => sum + a.amount, 0);
@@ -201,8 +219,13 @@ const App: React.FC = () => {
     const newAssets = assets.map(a => a.id === updatedAsset.id ? updatedAsset : a);
     setAssets(newAssets);
 
-    if (updatedAsset.location && updatedAsset.location !== '-' && !availableLocations.includes(updatedAsset.location)) {
-      setAvailableLocations(prev => [...prev, updatedAsset.location]);
+    if (updatedAsset.location && updatedAsset.location !== '-') {
+      setAvailableLocations(prev => {
+        if (!prev.some(l => l.toLowerCase() === updatedAsset.location.toLowerCase())) {
+          return [...prev, updatedAsset.location];
+        }
+        return prev;
+      });
     }
 
     const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
