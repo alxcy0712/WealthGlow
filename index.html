@@ -1,76 +1,48 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WealthGlow AI</title>
-    <!-- Favicon: High-contrast circular icon with indigo background for better visibility -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%236366f1'/%3E%3Cpath d='M16 8l-7 3.5 7 3.5 7-3.5-7-3.5zM9 18l7 3.5 7-3.5M9 14.5l7 3.5 7-3.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%236366f1'/%3E%3Cpath d='M16 8l-7 3.5 7 3.5 7-3.5-7-3.5zM9 18l7 3.5 7-3.5M9 14.5l7 3.5 7-3.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3C/svg%3E">
-    
+    <title>财富金律 WealthGlow AI</title>
+    <!-- 高对比度圆形应用风格图标 (PNG Base64) -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAC80lEQVRYR8WXS0hUURjHf+fceccZfGRmOtoiaZREpYvI6EERpZtoU7Soh6EXEUX0IAtatInWpRcRREUvskXRS9SioiwSIsmkaSwa8zL3zj3fOfdaZ8fRccZxbuF/uOf7f98533e+73znEn6zS77Nf/5fAF7A7P8E+KcH7E4fQf8Y8DkA2xXo7QD6BvTvA8Y6gA839n8CcCcAxwNId8D9DPCnO/unAOwLID0AbBfA0wDCAfSPAn/7Ab0HMAA8DCAdQM8A8O7+PQI8DCAcQH8AQLsBvLu7/xOAO6C7CcCnAzLnDugTgCMAbArg6X7AtqvQMwAs/78C7IDuZgCfDshmAH0CcATADQAs/t8AbFegXwBY/P8CuAOY7AbApgCeDsixAFIB8DCAdgP4eGf/JwB3AnA8gHQH3M8Af7qzfw7AvgDSY8B2ATwNIBxA7zjwtx/Qp8A08DCAO6C7CcCnAzLnDugTgCMA7idguwr9P0D3O9BfAewp4OEP6N8G9A7Atiuwf639N6H9H3D/99L/hl/guy/wXf8DvuEX+MZe4Bt/ga8dBb7hF/jaUeAbfoFv7AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX6C/K8A3D8Be4Bv7B6M66E+B/XvgPwA5z0W7m7l9mAAAAABJRU5ErkJggg==">
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAC80lEQVRYR8WXS0hUURjHf+fceccZfGRmOtoiaZREpYvI6EERpZtoU7Soh6EXEUX0IAtatInWpRcRREUvskXRS9SioiwSIsmkaSwa8zL3zj3fOfdaZ8fRccZxbuF/uOf7f98533e+73znEn6zS77Nf/5fAF7A7P8E+KcH7E4fQf8Y8DkA2xXo7QD6BvTvA8Y6gA839n8CcCcAxwNId8D9DPCnO/unAOwLID0AbBfA0wDCAfSPAn/7Ab0HMAA8DCAdQM8A8O7+PQI8DCAcQH8AQLsBvLu7/xOAO6C7CcCnAzLnDugTgCMAbArg6X7AtqvQMwAs/78C7IDuZgCfDshmAH0CcATADQAs/t8AbFegXwBY/P8CuAOY7AbApgCeDsixAFIB8DCAdgP4eGf/JwB3AnA8gHQH3M8Af7qzfw7AvgDSY8B2ATwNIBxA7zjwtx/Qp8A08DCAO6C7CcCnAzLnDugTgCMA7idguwr9P0D3O9BfAewp4OEP6N8G9A7Atiuwf639N6H9H3D/99L/hl/guy/wXf8DvuEX+MZe4Bt/ga8dBb7hF/jaUeAbfoFv7AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX+AbfoFv+AW+8Rf4xl7gG36Bb/gFvvEX+MZe4Bt+gW/4Bb6xF/jGX6C/K8A3D8Be4Bv7B6M66E+B/XvgPwA5z0W7m7l9mAAAAABJRU5ErkJggg==">
+
     <!-- Tailwind via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-      body {
-        font-family: 'Inter', sans-serif;
-      }
-      @keyframes slideDown {
-        from { transform: translate(-50%, -100%); opacity: 0; }
-        to { transform: translate(-50%, 20px); opacity: 1; }
-      }
-      .animate-slide-down {
-        animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .animate-fade-in {
-        animation: fadeIn 0.3s ease-out forwards;
-      }
-      
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f5f9; 
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #cbd5e1; 
-        border-radius: 3px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8; 
-      }
-
-      input::-webkit-outer-spin-button,
-      input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      input[type=number] {
-        -moz-appearance: textfield;
-      }
+      body { font-family: 'Inter', sans-serif; }
+      @keyframes slideDown { from { transform: translate(-50%, -100%); opacity: 0; } to { transform: translate(-50%, 20px); opacity: 1; } }
+      .animate-slide-down { animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+      input[type=number] { -moz-appearance: textfield; }
     </style>
-  <script type="importmap">
+
+    <script type="importmap">
 {
   "imports": {
-    "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
-    "recharts": "https://esm.sh/recharts@^3.5.1",
-    "react": "https://esm.sh/react@^19.2.1",
-    "@google/genai": "https://esm.sh/@google/genai@^1.32.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.559.0",
-    "vite": "https://esm.sh/vite@^7.2.7",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "react/": "https://esm.sh/react@^19.2.1/"
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
-</head>
+  </head>
   <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="index.tsx"></script>
   </body>
 </html>
