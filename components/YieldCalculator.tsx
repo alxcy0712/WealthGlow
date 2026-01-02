@@ -14,11 +14,15 @@ interface YieldCalculatorProps {
 
 export const YieldCalculator: React.FC<YieldCalculatorProps> = ({ isOpen, onClose, language, currency }) => {
   const t = translations[language];
-  const [initial, setInitial] = useState<string>('10000');
-  const [final, setFinal] = useState<string>('11000');
-  const [days, setDays] = useState<string>('365');
+  // Change state to empty strings and use placeholders
+  const [initial, setInitial] = useState<string>('');
+  const [final, setFinal] = useState<string>('');
+  const [days, setDays] = useState<string>('');
 
   const calculate = () => {
+    // If any field is empty, don't calculate meaningful results
+    if (!initial || !final || !days) return { annualized: 0, total: 0 };
+
     const p = parseFloat(initial);
     const f = parseFloat(final);
     const d = parseFloat(days);
@@ -51,6 +55,7 @@ export const YieldCalculator: React.FC<YieldCalculatorProps> = ({ isOpen, onClos
               <input 
                 type="number" 
                 value={initial} 
+                placeholder="10000"
                 onChange={(e) => setInitial(e.target.value)}
                 className="w-full pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               />
@@ -64,6 +69,7 @@ export const YieldCalculator: React.FC<YieldCalculatorProps> = ({ isOpen, onClos
               <input 
                 type="number" 
                 value={final} 
+                placeholder="11000"
                 onChange={(e) => setFinal(e.target.value)}
                 className="w-full pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               />
@@ -77,6 +83,7 @@ export const YieldCalculator: React.FC<YieldCalculatorProps> = ({ isOpen, onClos
               <input 
                 type="number" 
                 value={days} 
+                placeholder="365"
                 onChange={(e) => setDays(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
               />

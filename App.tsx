@@ -1,9 +1,10 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Asset, RiskLevel, SimulationYear, OptimizationResult, Language, Currency } from './types';
 import { AssetManager } from './components/AssetManager';
 import { SimulationChart } from './components/SimulationChart';
 import { optimizePortfolio } from './services/gemini';
-import { Settings, Sparkles, TrendingUp, AlertTriangle, ArrowRight, Wallet, Languages, PlayCircle, BarChart3, FileText, ChevronDown, Percent, BrainCircuit, Calculator, LayoutGrid, Sliders, Calendar, DollarSign, Coins, Layers } from 'lucide-react';
+import { Settings, Sparkles, TrendingUp, AlertTriangle, ArrowRight, Wallet, Languages, PlayCircle, BarChart3, FileText, ChevronDown, Percent, BrainCircuit, Calculator, LayoutGrid, Sliders, Calendar, DollarSign, Coins } from 'lucide-react';
 import { translations } from './i18n';
 import { Toast, ToastType } from './components/Toast';
 import { Modal } from './components/Modal';
@@ -50,7 +51,7 @@ const App: React.FC = () => {
   const [simulationPrincipal, setSimulationPrincipal] = useState<string>('');
   const [years, setYears] = useState<number>(20);
   const [annualWithdrawal, setAnnualWithdrawal] = useState<string>('');
-  const [withdrawalFrequency, setWithdrawalFrequency] = useState<'yearly' | 'monthly'>('yearly');
+  const [withdrawalFrequency, setWithdrawalFrequency] = useState<'yearly' | 'monthly'>('monthly');
   const [withdrawalIncreaseRate, setWithdrawalIncreaseRate] = useState<string>('');
   
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -76,7 +77,8 @@ const App: React.FC = () => {
   const cashAmount = Math.max(0, principalNum - totalRecorded);
 
   const defaultWithdrawal = useMemo(() => {
-    return (principalNum * 0.04).toFixed(0);
+    // If monthly is default, show 1/12th of 4% rule as default
+    return ((principalNum * 0.04) / 12).toFixed(0);
   }, [principalNum]);
   
   const withdrawalNum = useMemo(() => {
@@ -106,7 +108,7 @@ const App: React.FC = () => {
     setSimulationPrincipal('');
     setAnnualWithdrawal('');
     setWithdrawalIncreaseRate('');
-    setWithdrawalFrequency('yearly'); 
+    setWithdrawalFrequency('monthly'); 
   };
 
   const simulationData = useMemo<SimulationYear[]>(() => {
@@ -166,6 +168,7 @@ const App: React.FC = () => {
     const newAssets = [...assets, asset];
     setAssets(newAssets);
     
+    // Sync location - Case-insensitive check to prevent duplicates
     if (asset.location && asset.location !== '-') {
       setAvailableLocations(prev => {
         if (!prev.some(l => l.toLowerCase() === asset.location.toLowerCase())) {
@@ -189,11 +192,13 @@ const App: React.FC = () => {
       .map(a => a.location)
       .filter(loc => {
         if (!loc || loc === '-') return false;
+        // Check uniqueness within the batch and existing locations
         return !availableLocations.some(l => l.toLowerCase() === loc.toLowerCase());
       });
     
     if (newLocsFromBatch.length > 0) {
       const uniqueNewLocs = Array.from(new Set(newLocsFromBatch));
+      // One final check to ensure case-insensitive uniqueness against state
       setAvailableLocations(prev => {
         const result = [...prev];
         uniqueNewLocs.forEach(loc => {
@@ -317,17 +322,11 @@ const App: React.FC = () => {
 
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm/50 backdrop-blur-md bg-white/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative">
-              <div className="bg-indigo-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-100 group-hover:scale-105 transition-all duration-300">
-                <Layers className="w-5 h-5" />
-              </div>
-              <div className="absolute -inset-1 bg-indigo-400 rounded-xl blur opacity-0 group-hover:opacity-20 transition duration-500"></div>
+          <div className="flex items-center gap-2">
+            <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-2 rounded-lg shadow-sm">
+              <TrendingUp className="w-5 h-5" />
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-xl font-black tracking-tight leading-none text-slate-900">Wealth<span className="text-indigo-600">Glow</span></h1>
-              <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest mt-0.5">{language === 'zh' ? '财富金律' : 'PORTFOLIO AI'}</span>
-            </div>
+            <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-violet-700 truncate">{t.appTitle}</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
              <button onClick={() => setIsYieldCalcOpen(true)} className="group flex items-center h-10 px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200">
@@ -348,6 +347,7 @@ const App: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        {/* Optimized Simulation Config Card - Balanced Proportions and Correct Labels */}
         <section className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 p-4 sm:p-5">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
@@ -360,6 +360,7 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-3">
+              {/* Row 1: Principal (4/8), Withdrawal (2/8), Increase Rate (2/8) -> 4:2:2 ratio on 8-col grid */}
               <div className="grid grid-cols-1 md:grid-cols-8 gap-3">
                 <div className="md:col-span-4 bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all shadow-inner">
                   <label className="block text-[10px] font-black text-slate-700 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><DollarSign className="w-3 h-3" /> {t.initialPrincipal}</label>
@@ -393,6 +394,7 @@ const App: React.FC = () => {
                 </div>
               </div>
 
+              {/* Row 2: Time Horizon (Alone, labels on left and right) */}
               <div className="w-full bg-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-100 flex items-center justify-between gap-4 relative overflow-hidden group min-h-[80px]">
                   <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
                     <Calendar className="w-12 h-12" />
