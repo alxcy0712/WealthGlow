@@ -32,8 +32,10 @@ export interface OptimizationResult {
 export type Language = 'en' | 'zh';
 export type Currency = 'USD' | 'CNY';
 
+// AI Service Provider types
 export type AIProvider = 'gemini' | 'deepseek';
 
+// Configuration for AI services
 export interface AIConfig {
   provider: AIProvider;
   apiKey: string;

@@ -4,13 +4,13 @@ import { Asset, RiskLevel, SimulationYear, OptimizationResult, Language, Currenc
 import { AssetManager } from './components/AssetManager';
 import { SimulationChart } from './components/SimulationChart';
 import { optimizePortfolio } from './services/gemini';
-import { Settings, Sparkles, TrendingUp, AlertTriangle, ArrowRight, Wallet, Languages, PlayCircle, BarChart3, FileText, ChevronDown, Percent, BrainCircuit, Calculator, LayoutGrid, Sliders, Calendar, DollarSign, Coins } from 'lucide-react';
+import { Sparkles, TrendingUp, AlertTriangle, ArrowRight, Wallet, Languages, BarChart3, FileText, ChevronDown, Percent, Calculator, Sliders, Calendar, DollarSign, Coins, BrainCircuit } from 'lucide-react';
 import { translations } from './i18n';
 import { Toast, ToastType } from './components/Toast';
 import { Modal } from './components/Modal';
 import { SimpleMarkdown } from './components/SimpleMarkdown';
-import { AISettingsModal } from './components/AISettingsModal';
 import { YieldCalculator } from './components/YieldCalculator';
+import { AISettingsModal } from './components/AISettingsModal';
 
 const DEFAULT_ASSETS_EN: Asset[] = [
   { id: '1', name: 'Treasury Bonds', location: 'Bank A', riskLevel: RiskLevel.R1, amount: 20000, expectedReturnRate: 3.5 },
@@ -58,8 +58,8 @@ const App: React.FC = () => {
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
-  const [isAiSettingsOpen, setIsAiSettingsOpen] = useState(false);
   const [isYieldCalcOpen, setIsYieldCalcOpen] = useState(false);
+  const [isAISettingsOpen, setIsAISettingsOpen] = useState(false);
 
   const totalRecorded = useMemo(() => assets.reduce((sum, a) => sum + a.amount, 0), [assets]);
   
@@ -77,7 +77,6 @@ const App: React.FC = () => {
   const cashAmount = Math.max(0, principalNum - totalRecorded);
 
   const defaultWithdrawal = useMemo(() => {
-    // If monthly is default, show 1/12th of 4% rule as default
     return ((principalNum * 0.04) / 12).toFixed(0);
   }, [principalNum]);
   
@@ -167,17 +166,6 @@ const App: React.FC = () => {
   const handleAddAsset = (asset: Asset) => {
     const newAssets = [...assets, asset];
     setAssets(newAssets);
-    
-    // Sync location - Case-insensitive check to prevent duplicates
-    if (asset.location && asset.location !== '-') {
-      setAvailableLocations(prev => {
-        if (!prev.some(l => l.toLowerCase() === asset.location.toLowerCase())) {
-          return [...prev, asset.location];
-        }
-        return prev;
-      });
-    }
-
     const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
     if (simulationPrincipal !== '' && newTotal > parseFloat(simulationPrincipal)) {
       setSimulationPrincipal(newTotal.toString());
@@ -187,29 +175,6 @@ const App: React.FC = () => {
   const handleBatchAddAssets = (newAssetsBatch: Asset[]) => {
     const combined = [...assets, ...newAssetsBatch];
     setAssets(combined);
-
-    const newLocsFromBatch = newAssetsBatch
-      .map(a => a.location)
-      .filter(loc => {
-        if (!loc || loc === '-') return false;
-        // Check uniqueness within the batch and existing locations
-        return !availableLocations.some(l => l.toLowerCase() === loc.toLowerCase());
-      });
-    
-    if (newLocsFromBatch.length > 0) {
-      const uniqueNewLocs = Array.from(new Set(newLocsFromBatch));
-      // One final check to ensure case-insensitive uniqueness against state
-      setAvailableLocations(prev => {
-        const result = [...prev];
-        uniqueNewLocs.forEach(loc => {
-          if (!result.some(l => l.toLowerCase() === loc.toLowerCase())) {
-            result.push(loc);
-          }
-        });
-        return result;
-      });
-    }
-
     const newTotal = combined.reduce((sum, a) => sum + a.amount, 0);
     if (simulationPrincipal !== '' && newTotal > parseFloat(simulationPrincipal)) {
       setSimulationPrincipal(newTotal.toString());
@@ -219,16 +184,6 @@ const App: React.FC = () => {
   const handleUpdateAsset = (updatedAsset: Asset) => {
     const newAssets = assets.map(a => a.id === updatedAsset.id ? updatedAsset : a);
     setAssets(newAssets);
-
-    if (updatedAsset.location && updatedAsset.location !== '-') {
-      setAvailableLocations(prev => {
-        if (!prev.some(l => l.toLowerCase() === updatedAsset.location.toLowerCase())) {
-          return [...prev, updatedAsset.location];
-        }
-        return prev;
-      });
-    }
-
     const newTotal = newAssets.reduce((sum, a) => sum + a.amount, 0);
     if (simulationPrincipal !== '' && newTotal > parseFloat(simulationPrincipal)) {
       setSimulationPrincipal(newTotal.toString());
@@ -317,8 +272,8 @@ const App: React.FC = () => {
         ) : <div className="p-10 text-center text-slate-400">No analysis available.</div>}
       </Modal>
 
-      <AISettingsModal isOpen={isAiSettingsOpen} onClose={() => setIsAiSettingsOpen(false)} language={language} onSave={() => showToast(language === 'zh' ? '设置已保存' : 'Settings saved', 'success')} />
       <YieldCalculator isOpen={isYieldCalcOpen} onClose={() => setIsYieldCalcOpen(false)} language={language} currency={currency} />
+      <AISettingsModal isOpen={isAISettingsOpen} onClose={() => setIsAISettingsOpen(false)} language={language} onSave={() => showToast(language === 'zh' ? '设置已保存' : 'Settings saved', 'success')} />
 
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm/50 backdrop-blur-md bg-white/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -329,15 +284,19 @@ const App: React.FC = () => {
             <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-violet-700 truncate">{t.appTitle}</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
+             {/* AI Settings Trigger */}
+             <button onClick={() => setIsAISettingsOpen(true)} className="group flex items-center h-10 px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200">
+               <BrainCircuit className="w-5 h-5 flex-shrink-0" />
+               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold">{t.aiSettings}</span>
+             </button>
+
              <button onClick={() => setIsYieldCalcOpen(true)} className="group flex items-center h-10 px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200">
                <Calculator className="w-5 h-5 flex-shrink-0" />
                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold">{t.yieldCalculator}</span>
              </button>
-             <button onClick={() => setIsAiSettingsOpen(true)} className="group flex items-center h-10 px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200">
-               <BrainCircuit className="w-5 h-5 flex-shrink-0" />
-               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold">{t.aiSettings}</span>
-             </button>
+
              <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+             
              <button onClick={handleLanguageSwitch} className="group flex items-center h-10 px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-indigo-600 transition-all duration-300 border border-transparent">
                <Languages className="w-4 h-4 flex-shrink-0" />
                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold">{language === 'en' ? 'Switch to 中文' : '切换到 English'}</span>
@@ -347,7 +306,6 @@ const App: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        {/* Optimized Simulation Config Card - Balanced Proportions and Correct Labels */}
         <section className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 p-4 sm:p-5">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
@@ -360,7 +318,6 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-3">
-              {/* Row 1: Principal (4/8), Withdrawal (2/8), Increase Rate (2/8) -> 4:2:2 ratio on 8-col grid */}
               <div className="grid grid-cols-1 md:grid-cols-8 gap-3">
                 <div className="md:col-span-4 bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all shadow-inner">
                   <label className="block text-[10px] font-black text-slate-700 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><DollarSign className="w-3 h-3" /> {t.initialPrincipal}</label>
@@ -394,7 +351,6 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Row 2: Time Horizon (Alone, labels on left and right) */}
               <div className="w-full bg-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-100 flex items-center justify-between gap-4 relative overflow-hidden group min-h-[80px]">
                   <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
                     <Calendar className="w-12 h-12" />
@@ -445,6 +401,7 @@ const App: React.FC = () => {
              <button onClick={() => setIsAnalysisModalOpen(true)} className="w-full text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2">{t.viewAnalysis} <ArrowRight className="w-3 h-3" /></button>
           </div>
         )}
+        
         <button onClick={handleOptimize} disabled={isOptimizing} className={`bg-slate-900 hover:bg-indigo-600 text-white shadow-2xl transition-all duration-300 ease-out flex items-center gap-0 overflow-hidden h-12 sm:h-14 pl-3 sm:pl-4 rounded-full ${isOptimizing ? 'w-40 sm:w-48' : 'w-12 sm:w-14 group-hover/fab:w-48 sm:group-hover/fab:w-56'}`}>
            {isOptimizing ? <><div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0"></div><span className="whitespace-nowrap ml-2 sm:ml-3 text-sm sm:text-base font-medium">{t.processing}</span></> : <><Sparkles className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 transition-transform duration-700 ease-in-out group-hover/fab:rotate-[360deg]" /><span className="whitespace-nowrap opacity-0 group-hover/fab:opacity-100 ml-0 group-hover/fab:ml-3 transition-all duration-300 text-sm sm:text-base font-medium">{t.optimize}</span></>}
         </button>
