@@ -12,11 +12,11 @@ interface RiskPyramidProps {
 }
 
 const RISK_LEVEL_CONFIGS = [
-  { level: RiskLevel.R5, color: 'from-rose-600 to-red-500', bg: 'bg-rose-50', text: 'text-rose-600' },
-  { level: RiskLevel.R4, color: 'from-amber-500 to-orange-500', bg: 'bg-amber-50', text: 'text-amber-600' },
-  { level: RiskLevel.R3, color: 'from-indigo-600 to-blue-500', bg: 'bg-indigo-50', text: 'text-indigo-600' },
-  { level: RiskLevel.R2, color: 'from-cyan-500 to-teal-500', bg: 'bg-cyan-50', text: 'text-cyan-600' },
-  { level: RiskLevel.R1, color: 'from-emerald-600 to-green-500', bg: 'bg-emerald-50', text: 'text-emerald-600' },
+  { level: RiskLevel.R5, color: 'from-rose-600 to-red-500', bg: 'bg-rose-50 dark:bg-rose-950/20', text: 'text-rose-600 dark:text-rose-400' },
+  { level: RiskLevel.R4, color: 'from-amber-500 to-orange-500', bg: 'bg-amber-50 dark:bg-amber-950/20', text: 'text-amber-600 dark:text-amber-400' },
+  { level: RiskLevel.R3, color: 'from-indigo-600 to-blue-500', bg: 'bg-indigo-50 dark:bg-indigo-950/20', text: 'text-indigo-600 dark:text-indigo-400' },
+  { level: RiskLevel.R2, color: 'from-cyan-500 to-teal-500', bg: 'bg-cyan-50 dark:bg-cyan-950/20', text: 'text-cyan-600 dark:text-cyan-400' },
+  { level: RiskLevel.R1, color: 'from-emerald-600 to-green-500', bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-600 dark:text-emerald-400' },
 ];
 
 export const RiskPyramid: React.FC<RiskPyramidProps> = ({ assets, totalPrincipal, language, currency }) => {
@@ -75,37 +75,37 @@ export const RiskPyramid: React.FC<RiskPyramidProps> = ({ assets, totalPrincipal
 
   const renderDetails = () => (
     <div className="flex flex-col h-full animate-fade-in overflow-hidden">
-      <div className="flex items-center justify-between mb-6 pb-5 border-b border-slate-200 flex-shrink-0">
+      <div className="flex items-center justify-between mb-6 pb-5 border-b border-slate-200 dark:border-slate-800 flex-shrink-0 transition-colors">
         <div className="flex items-center gap-4">
            {isMobile && (
-             <button onClick={() => setActiveLevel(null)} className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-400">
+             <button onClick={() => setActiveLevel(null)} className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 dark:text-slate-500 transition-colors">
                <ChevronLeft className="w-5 h-5" />
              </button>
            )}
-           <div className={`p-3 rounded-2xl bg-white shadow-md border border-slate-100 flex-shrink-0 ${activeData?.text}`}>
+           <div className={`p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700 flex-shrink-0 ${activeData?.text}`}>
               <Shield className="w-6 h-6" />
            </div>
            <div className="min-w-0">
-              <h4 className="font-black text-slate-800 text-sm uppercase tracking-tight">{activeData?.level}</h4>
-              <p className="text-[12px] text-slate-500 font-bold truncate">{activeData?.desc}</p>
+              <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm uppercase tracking-tight transition-colors">{activeData?.level}</h4>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 font-bold truncate transition-colors">{activeData?.desc}</p>
            </div>
         </div>
         <div className="text-right flex-shrink-0 ml-4">
-           <div className="text-base font-black text-slate-800">{formatCurrency(activeData?.total || 0)}</div>
-           <div className="text-[10px] text-indigo-500 font-black uppercase tracking-wider">{activeData?.percentage.toFixed(1)}% {t.riskComposition}</div>
+           <div className="text-base font-black text-slate-800 dark:text-slate-100 transition-colors">{formatCurrency(activeData?.total || 0)}</div>
+           <div className="text-[10px] text-indigo-500 dark:text-indigo-400 font-black uppercase tracking-wider">{activeData?.percentage.toFixed(1)}% {t.riskComposition}</div>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2 pb-4">
         {activeData?.items.map((asset) => (
-           <div key={asset.id} className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm hover:border-indigo-300 hover:shadow-md transition-all group">
+           <div key={asset.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 flex items-center justify-between shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md transition-all group">
               <div className="min-w-0 pr-4">
-                 <div className="font-bold text-slate-800 text-sm truncate group-hover:text-indigo-600 transition-colors">{asset.name}</div>
-                 <div className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{asset.location}</div>
+                 <div className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{asset.name}</div>
+                 <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate mt-0.5">{asset.location}</div>
               </div>
               <div className="text-right flex-shrink-0">
-                 <div className="text-sm font-black text-slate-700">{formatCurrency(asset.amount)}</div>
-                 <div className="text-[10px] font-bold text-emerald-500 flex items-center justify-end gap-1">
+                 <div className="text-sm font-black text-slate-700 dark:text-slate-300 transition-colors">{formatCurrency(asset.amount)}</div>
+                 <div className="text-[10px] font-bold text-emerald-500 dark:text-emerald-400 flex items-center justify-end gap-1">
                     <TrendingUp className="w-3 h-3" />
                     {asset.expectedReturnRate}%
                  </div>
@@ -118,14 +118,13 @@ export const RiskPyramid: React.FC<RiskPyramidProps> = ({ assets, totalPrincipal
 
   return (
     <div 
-      className={`flex flex-col lg:flex-row gap-8 items-stretch py-2 relative overflow-hidden ${!isMobile ? 'lg:h-[600px]' : 'min-h-[500px]'}`} 
+      className={`flex flex-col lg:flex-row gap-8 items-stretch py-2 relative overflow-hidden bg-white dark:bg-slate-900 transition-colors duration-300 ${!isMobile ? 'lg:h-[600px]' : 'min-h-[500px]'}`} 
       onClick={() => !isMobile && setActiveLevel(null)}
     >
-      {/* 左侧：金字塔图形区 - 桌面端固定 */}
       <div className={`w-full ${isMobile ? 'h-full' : 'lg:w-[55%] h-full'} flex flex-col items-center relative flex-shrink-0 overflow-hidden`}>
         <div className="w-full flex justify-center pb-6 flex-shrink-0">
-            <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100/50 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-                <BarChart className="w-3 h-3 text-indigo-500" /> 
+            <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-100/50 dark:bg-slate-800/80 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
+                <BarChart className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> 
                 {language === 'zh' ? '资产配置比例 (对数缩放)' : 'Allocation (Scaled View)'}
             </div>
         </div>
@@ -139,12 +138,13 @@ export const RiskPyramid: React.FC<RiskPyramidProps> = ({ assets, totalPrincipal
                 className="relative flex justify-center w-full group/layer flex-shrink-0"
                 style={{ height: `${item.visualHeight}px` }}
               >
-                <div className="absolute inset-y-0 w-full max-w-[95%] bg-slate-50/50 rounded-2xl -z-10 border border-slate-100 transition-all group-hover/layer:bg-slate-100/80"></div>
+                {/* 每一层底下的透明框与透明边框 */}
+                <div className="absolute inset-y-0 w-full max-w-[95%] bg-transparent rounded-2xl -z-10 border border-transparent transition-all group-hover/layer:bg-slate-100/10 dark:group-hover/layer:bg-white/5"></div>
 
-                {hasData && (
+                {hasData ? (
                   <div 
                     className={`flex flex-col items-center justify-center transition-all duration-500 relative
-                      bg-gradient-to-br shadow-md border border-white/30 rounded-2xl overflow-hidden cursor-pointer
+                      bg-gradient-to-br shadow-md border border-white/30 dark:border-white/10 rounded-2xl overflow-hidden cursor-pointer
                       ${item.color} 
                       ${activeLevel === item.level ? 'scale-[1.05] z-20 shadow-2xl brightness-110 ring-4 ring-indigo-500/20' : 'opacity-90 z-10 hover:opacity-100 hover:scale-[1.03] hover:shadow-xl'}
                     `}
@@ -168,10 +168,8 @@ export const RiskPyramid: React.FC<RiskPyramidProps> = ({ assets, totalPrincipal
                        </div>
                     </div>
                   </div>
-                )}
-                
-                {!hasData && (
-                   <div className="flex items-center justify-center text-slate-200 text-[10px] font-bold opacity-40">
+                ) : (
+                   <div className="flex items-center justify-center text-slate-300 dark:text-slate-600 text-[10px] font-bold opacity-40 transition-colors">
                       {item.level} - {item.desc}
                    </div>
                 )}
@@ -181,18 +179,18 @@ export const RiskPyramid: React.FC<RiskPyramidProps> = ({ assets, totalPrincipal
         </div>
 
         <div className="w-full text-center mt-6 flex-shrink-0">
-           <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium">
+           <p className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-medium transition-colors">
              {language === 'zh' ? '* 宽度已进行非线性缩放，以确保小额资产层级清晰可见' : '* Width is non-linearly scaled to ensure visibility of small allocations'}
            </p>
         </div>
 
         <div className="absolute bottom-2 right-2 hidden sm:block">
            <div className="group relative">
-              <div className="p-2 bg-white hover:bg-indigo-600 text-slate-400 hover:text-white rounded-full cursor-help transition-all shadow-sm border border-slate-200">
+              <div className="p-2 bg-white dark:bg-slate-800 hover:bg-indigo-600 dark:hover:bg-indigo-600 text-slate-400 dark:text-slate-500 hover:text-white rounded-full cursor-help transition-all shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
                  <HelpCircle className="w-5 h-5" />
               </div>
               <div className="absolute bottom-full right-0 mb-4 w-[280px] opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-50">
-                 <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-2xl text-[11px] leading-relaxed border border-white/10 backdrop-blur-md text-left">
+                 <div className="bg-slate-900 dark:bg-slate-950 text-white p-5 rounded-2xl shadow-2xl text-[11px] leading-relaxed border border-white/10 backdrop-blur-md text-left">
                     <div className="flex items-center gap-2 mb-3 font-bold text-indigo-400 border-b border-white/10 pb-2">
                        <Shield className="w-4 h-4" />
                        {language === 'zh' ? '金字塔配置逻辑' : 'Pyramid Logic'}
@@ -215,38 +213,36 @@ export const RiskPyramid: React.FC<RiskPyramidProps> = ({ assets, totalPrincipal
            </div>
         </div>
 
-        {/* 手机端浮层 */}
         {isMobile && activeLevel && (
-           <div className="absolute inset-0 bg-white z-[60] flex flex-col p-4 sm:p-6 rounded-2xl animate-fade-in shadow-2xl">
+           <div className="absolute inset-0 bg-white dark:bg-slate-900 z-[60] flex flex-col p-4 sm:p-6 rounded-2xl animate-fade-in shadow-2xl transition-colors duration-300">
               {renderDetails()}
            </div>
         )}
       </div>
 
-      {/* 右侧：桌面端详情面板 - 独立滚动 */}
       {!isMobile && (
-        <div className="lg:w-[45%] h-full flex flex-col bg-slate-50/50 rounded-3xl border border-slate-100 p-6 overflow-hidden shadow-inner flex-shrink-0">
+        <div className="lg:w-[45%] h-full flex flex-col bg-slate-50/50 dark:bg-slate-950/60 rounded-3xl border border-slate-100 dark:border-slate-800 p-6 overflow-hidden shadow-inner flex-shrink-0 transition-colors">
           {activeData && activeData.total > 0 ? (
              renderDetails()
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-6 px-6">
-               <div className="w-20 h-20 bg-white rounded-[2.5rem] shadow-lg border border-slate-100 flex items-center justify-center text-slate-300">
+               <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-lg border border-slate-100 dark:border-slate-700 flex items-center justify-center text-slate-300 dark:text-slate-600 transition-colors">
                   <PieChart className="w-10 h-10" />
                </div>
                <div>
-                  <h4 className="text-base font-black text-slate-800 tracking-tight">{language === 'zh' ? '选择一个等级' : 'Select a Level'}</h4>
-                  <p className="text-sm text-slate-400 mt-2 leading-relaxed font-medium">
+                  <h4 className="text-base font-black text-slate-800 dark:text-slate-100 tracking-tight transition-colors">{language === 'zh' ? '选择一个等级' : 'Select a Level'}</h4>
+                  <p className="text-sm text-slate-400 dark:text-slate-500 mt-2 leading-relaxed font-medium transition-colors">
                      {language === 'zh' ? '点击左侧金字塔中具有颜色高亮的层级，查看详细的资产分布。' : 'Click the colored layers in the pyramid to view asset distribution details.'}
                   </p>
                </div>
                <div className="pt-6 w-full space-y-2">
-                  <div className="px-4 py-3 bg-white rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm">
-                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{language === 'zh' ? '本金总额' : 'Principal'}</span>
-                     <span className="text-sm font-black text-indigo-600">{formatCurrency(totalPrincipal)}</span>
+                  <div className="px-4 py-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 flex items-center justify-between shadow-sm transition-colors">
+                     <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{language === 'zh' ? '本金总额' : 'Principal'}</span>
+                     <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{formatCurrency(totalPrincipal)}</span>
                   </div>
-                  <div className="px-4 py-3 bg-white rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm">
-                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{language === 'zh' ? '已记录资产' : 'Total Recorded'}</span>
-                     <span className="text-sm font-black text-slate-700">{formatCurrency(totalAssetsValue)}</span>
+                  <div className="px-4 py-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 flex items-center justify-between shadow-sm transition-colors">
+                     <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{language === 'zh' ? '已记录资产' : 'Total Recorded'}</span>
+                     <span className="text-sm font-black text-slate-700 dark:text-slate-200">{formatCurrency(totalAssetsValue)}</span>
                   </div>
                </div>
             </div>

@@ -105,7 +105,10 @@ export const translations = {
     providerDeepseek: "Deepseek AI",
     customApiKey: "Private API Key",
     customModel: "Model Name",
-    saveSettings: "Save Configuration"
+    saveSettings: "Save Configuration",
+    toggleTheme: "Toggle Light/Dark Theme",
+    themeLight: "Light",
+    themeDark: "Dark"
   },
   zh: {
     appTitle: "财富光辉 AI",
@@ -210,6 +213,9 @@ export const translations = {
     providerDeepseek: "Deepseek AI",
     customApiKey: "私有 API Key",
     customModel: "模型名称",
-    saveSettings: "保存配置"
+    saveSettings: "保存配置",
+    toggleTheme: "切换明暗主题",
+    themeLight: "浅色",
+    themeDark: "深色"
   }
 };

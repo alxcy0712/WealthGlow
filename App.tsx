@@ -4,7 +4,7 @@ import { Asset, RiskLevel, SimulationYear, OptimizationResult, Language, Currenc
 import { AssetManager } from './components/AssetManager';
 import { SimulationChart } from './components/SimulationChart';
 import { optimizePortfolio } from './services/gemini';
-import { Sparkles, TrendingUp, AlertTriangle, ArrowRight, Wallet, Languages, BarChart3, FileText, ChevronDown, Percent, Calculator, Sliders, Calendar, DollarSign, Coins, BrainCircuit } from 'lucide-react';
+import { Sparkles, TrendingUp, AlertTriangle, ArrowRight, Wallet, Languages, BarChart3, FileText, ChevronDown, Percent, Calculator, Sliders, Calendar, DollarSign, Coins, BrainCircuit, Sun, Moon } from 'lucide-react';
 import { translations } from './i18n';
 import { Toast, ToastType } from './components/Toast';
 import { Modal } from './components/Modal';
@@ -26,6 +26,12 @@ const DEFAULT_ASSETS_ZH: Asset[] = [
 
 const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>('zh');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved as 'light' | 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
   const currency: Currency = language === 'en' ? 'USD' : 'CNY';
   const t = translations[language];
 
@@ -40,6 +46,17 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('wealthglow_locations', JSON.stringify(availableLocations));
   }, [availableLocations]);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const [toast, setToast] = useState<{message: string, type: ToastType} | null>(null);
 
@@ -241,29 +258,29 @@ const App: React.FC = () => {
   }).format(val);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-20 font-sans relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 sm:pb-20 font-sans relative overflow-x-hidden transition-colors duration-300">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <Modal isOpen={isAnalysisModalOpen} onClose={() => setIsAnalysisModalOpen(false)} title={t.modalAnalysisTitle}>
         {optimizationResult ? (
           <div className="space-y-6">
-            <div className="prose-indigo prose-sm"><SimpleMarkdown content={optimizationResult.analysis} /></div>
-            <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 sm:p-5">
+            <div className="prose-indigo prose-sm dark:prose-invert"><SimpleMarkdown content={optimizationResult.analysis} /></div>
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
-                  <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wide">{t.suggestedChanges}</h4>
+                  <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm uppercase tracking-wide">{t.suggestedChanges}</h4>
                   <button onClick={applyOptimization} className="w-full sm:w-auto text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 shadow-sm">
                     {t.apply} <ArrowRight className="w-3 h-3" />
                   </button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {optimizationResult.suggestedPortfolio.map((item, idx) => (
-                    <div key={idx} className="p-3 bg-white rounded-lg border border-slate-200 text-sm shadow-sm hover:border-indigo-200 transition-colors">
-                      <div className="font-medium text-slate-900 truncate" title={item.name}>{item.name}</div>
-                      <div className="flex justify-between mt-2 text-slate-500 text-xs">
-                          <span className={`px-1.5 py-0.5 rounded ${item.riskLevel === 'R5' ? 'bg-red-100 text-red-700' : item.riskLevel === 'R4' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100'}`}>{item.riskLevel}</span>
-                          <span className="font-medium text-indigo-600">+{item.expectedReturnRate}%</span>
+                    <div key={idx} className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-sm shadow-sm hover:border-indigo-200 transition-colors">
+                      <div className="font-medium text-slate-900 dark:text-slate-100 truncate" title={item.name}>{item.name}</div>
+                      <div className="flex justify-between mt-2 text-slate-500 dark:text-slate-400 text-xs">
+                          <span className={`px-1.5 py-0.5 rounded ${item.riskLevel === 'R5' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : item.riskLevel === 'R4' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-700 dark:text-slate-300'}`}>{item.riskLevel}</span>
+                          <span className="font-medium text-indigo-600 dark:text-indigo-400">+{item.expectedReturnRate}%</span>
                       </div>
-                      <div className="mt-2 pt-2 border-t border-slate-100 font-bold text-slate-800">{formatCurrency(item.amount)}</div>
+                      <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-200">{formatCurrency(item.amount)}</div>
                     </div>
                   ))}
               </div>
@@ -275,29 +292,37 @@ const App: React.FC = () => {
       <YieldCalculator isOpen={isYieldCalcOpen} onClose={() => setIsYieldCalcOpen(false)} language={language} currency={currency} />
       <AISettingsModal isOpen={isAISettingsOpen} onClose={() => setIsAISettingsOpen(false)} language={language} onSave={() => showToast(language === 'zh' ? '设置已保存' : 'Settings saved', 'success')} />
 
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm/50 backdrop-blur-md bg-white/80">
+      <header className="bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm/50 backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-2 rounded-lg shadow-sm">
               <TrendingUp className="w-5 h-5" />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-violet-700 truncate">{t.appTitle}</h1>
+            <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-violet-700 dark:from-indigo-400 dark:to-violet-400 truncate">{t.appTitle}</h1>
           </div>
           <div className="flex items-center gap-1 sm:gap-4">
              {/* AI Settings Trigger */}
-             <button onClick={() => setIsAISettingsOpen(true)} className="group flex items-center h-10 px-2 sm:px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200" title={t.aiSettings}>
+             <button onClick={() => setIsAISettingsOpen(true)} className="group flex items-center h-10 px-2 sm:px-3 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 border border-transparent hover:border-slate-200 dark:hover:border-slate-700" title={t.aiSettings}>
                <BrainCircuit className="w-5 h-5 flex-shrink-0" />
                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold hidden sm:inline">{t.aiSettings}</span>
              </button>
 
-             <button onClick={() => setIsYieldCalcOpen(true)} className="group flex items-center h-10 px-2 sm:px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200" title={t.yieldCalculator}>
+             <button onClick={() => setIsYieldCalcOpen(true)} className="group flex items-center h-10 px-2 sm:px-3 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 border border-transparent hover:border-slate-200 dark:hover:border-slate-700" title={t.yieldCalculator}>
                <Calculator className="w-5 h-5 flex-shrink-0" />
                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold hidden sm:inline">{t.yieldCalculator}</span>
              </button>
 
-             <div className="h-6 w-px bg-slate-200 mx-1"></div>
+             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+
+             {/* Theme Toggle Button */}
+             <button onClick={toggleTheme} className="group flex items-center h-10 px-2 sm:px-3 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-all duration-300" title={t.toggleTheme}>
+               {theme === 'light' ? <Moon className="w-4 h-4 flex-shrink-0" /> : <Sun className="w-4 h-4 flex-shrink-0" />}
+               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold hidden sm:inline">
+                 {theme === 'light' ? t.themeDark : t.themeLight}
+               </span>
+             </button>
              
-             <button onClick={handleLanguageSwitch} className="group flex items-center h-10 px-2 sm:px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-indigo-600 transition-all duration-300 border border-transparent">
+             <button onClick={handleLanguageSwitch} className="group flex items-center h-10 px-2 sm:px-3 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 border border-transparent">
                <Languages className="w-4 h-4 flex-shrink-0" />
                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold hidden sm:inline">{language === 'en' ? 'EN' : '中文'}</span>
              </button>
@@ -306,52 +331,52 @@ const App: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        <section className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 p-4 sm:p-5">
+        <section className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-800 p-4 sm:p-5 transition-colors duration-300">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+              <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100 dark:shadow-none">
                 <Sliders className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-base font-black text-slate-900 tracking-tight">{t.simulationConfig}</h2>
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{language === 'zh' ? '调整核心预测参数' : 'Adjust projection variables'}</p>
+                <h2 className="text-base font-black text-slate-900 dark:text-slate-100 tracking-tight">{t.simulationConfig}</h2>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">{language === 'zh' ? '调整核心预测参数' : 'Adjust projection variables'}</p>
               </div>
             </div>
 
             <div className="flex flex-col gap-3">
               <div className="grid grid-cols-1 md:grid-cols-8 gap-3">
-                <div className="md:col-span-4 bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all shadow-inner">
-                  <label className="block text-[10px] font-black text-slate-700 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><DollarSign className="w-3 h-3" /> {t.initialPrincipal}</label>
+                <div className="md:col-span-4 bg-slate-50/50 dark:bg-slate-950/30 p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all shadow-inner">
+                  <label className="block text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><DollarSign className="w-3 h-3" /> {t.initialPrincipal}</label>
                   <div className="relative group">
-                    <span className="absolute left-2.5 top-1.5 text-slate-500 text-xs font-bold">{currency === 'USD' ? '$' : '¥'}</span>
-                    <input type="number" min="0" placeholder={defaultPrincipal.toString()} value={simulationPrincipal} onChange={(e) => setSimulationPrincipal(e.target.value)} onBlur={handlePrincipalBlur} className="w-full pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none font-black text-slate-900 shadow-sm" />
+                    <span className="absolute left-2.5 top-1.5 text-slate-500 dark:text-slate-500 text-xs font-bold">{currency === 'USD' ? '$' : '¥'}</span>
+                    <input type="number" min="0" placeholder={defaultPrincipal.toString()} value={simulationPrincipal} onChange={(e) => setSimulationPrincipal(e.target.value)} onBlur={handlePrincipalBlur} className="w-full pl-7 pr-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none font-black text-slate-900 dark:text-slate-100 shadow-sm" />
                   </div>
                 </div>
 
-                <div className="md:col-span-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all shadow-inner">
-                  <label className="block text-[10px] font-black text-slate-700 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><Coins className="w-3 h-3" /> {t.withdrawalLabel}</label>
-                  <div className="flex items-center w-full bg-white border border-slate-200 rounded-lg focus-within:ring-4 focus-within:ring-indigo-500/10 focus-within:border-indigo-500 transition-all shadow-sm overflow-hidden">
+                <div className="md:col-span-2 bg-slate-50/50 dark:bg-slate-950/30 p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all shadow-inner">
+                  <label className="block text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><Coins className="w-3 h-3" /> {t.withdrawalLabel}</label>
+                  <div className="flex items-center w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus-within:ring-4 focus-within:ring-indigo-500/10 focus-within:border-indigo-500 transition-all shadow-sm overflow-hidden">
                     <div className="pl-2.5 text-slate-500 text-[10px] font-bold pointer-events-none">{currency === 'USD' ? '$' : '¥'}</div>
-                    <input type="number" min="0" placeholder={defaultWithdrawal} value={annualWithdrawal} onChange={(e) => setAnnualWithdrawal(e.target.value)} className="flex-1 w-full min-w-0 px-1.5 py-1.5 bg-transparent border-none outline-none text-xs text-slate-900 font-black" />
+                    <input type="number" min="0" placeholder={defaultWithdrawal} value={annualWithdrawal} onChange={(e) => setAnnualWithdrawal(e.target.value)} className="flex-1 w-full min-w-0 px-1.5 py-1.5 bg-transparent border-none outline-none text-xs text-slate-900 dark:text-slate-100 font-black" />
                     <div className="relative flex items-center pr-1.5">
-                       <select value={withdrawalFrequency} onChange={(e) => setWithdrawalFrequency(e.target.value as any)} className="bg-transparent border-none outline-none text-slate-700 text-[9px] font-black cursor-pointer appearance-none py-1.5 pr-4 pl-1">
-                         <option value="yearly">{t.yearly.replace('/', '').trim()}</option>
-                         <option value="monthly">{t.monthly.replace('/', '').trim()}</option>
+                       <select value={withdrawalFrequency} onChange={(e) => setWithdrawalFrequency(e.target.value as any)} className="bg-transparent border-none outline-none text-slate-700 dark:text-slate-300 text-[9px] font-black cursor-pointer appearance-none py-1.5 pr-4 pl-1">
+                         <option value="yearly" className="dark:bg-slate-800">{t.yearly.replace('/', '').trim()}</option>
+                         <option value="monthly" className="dark:bg-slate-800">{t.monthly.replace('/', '').trim()}</option>
                        </select>
                        <div className="pointer-events-none absolute right-0.5 flex items-center text-slate-500"><ChevronDown className="w-2.5 h-2.5" /></div>
                     </div>
                   </div>
                 </div>
 
-                <div className="md:col-span-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all shadow-inner">
-                  <label className="block text-[10px] font-black text-slate-700 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><TrendingUp className="w-3 h-3" /> {language === 'zh' ? '支出增长率' : 'Withdrawal Growth Rate'}</label>
+                <div className="md:col-span-2 bg-slate-50/50 dark:bg-slate-950/30 p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all shadow-inner">
+                  <label className="block text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><TrendingUp className="w-3 h-3" /> {language === 'zh' ? '支出增长率' : 'Withdrawal Growth Rate'}</label>
                   <div className="relative group">
-                    <input type="number" min="0" step="0.1" placeholder="0" value={withdrawalIncreaseRate} onChange={(e) => setWithdrawalIncreaseRate(e.target.value)} className="w-full pl-2 pr-5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none font-black text-slate-900 shadow-sm" />
+                    <input type="number" min="0" step="0.1" placeholder="0" value={withdrawalIncreaseRate} onChange={(e) => setWithdrawalIncreaseRate(e.target.value)} className="w-full pl-2 pr-5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none font-black text-slate-900 dark:text-slate-100 shadow-sm" />
                     <span className="absolute right-2 top-1.5 text-slate-500 text-[9px] font-black pointer-events-none">%</span>
                   </div>
                 </div>
               </div>
 
-              <div className="w-full bg-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-100 flex items-center justify-between gap-4 relative overflow-hidden group min-h-[80px]">
+              <div className="w-full bg-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-indigo-100 dark:shadow-none flex items-center justify-between gap-4 relative overflow-hidden group min-h-[80px]">
                   <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
                     <Calendar className="w-12 h-12" />
                   </div>
@@ -376,34 +401,34 @@ const App: React.FC = () => {
                  <div className="relative z-10"><div className="flex items-center gap-2 mb-2 sm:mb-3 opacity-90"><span className="text-[10px] sm:text-sm font-medium tracking-wide uppercase">{t.finalValue}</span></div><div className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{formatCurrency(simulationData[simulationData.length - 1].totalValue)}</div></div>
                  <div className="relative z-10 mt-auto pt-2 flex items-center gap-2"><div className="text-[10px] bg-white/20 px-2.5 py-1 rounded-full text-white font-medium backdrop-blur-sm">{t.afterYears.replace('{0}', years.toString())}</div></div>
               </div>
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden h-36 sm:h-auto">
-                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><BarChart3 className="w-20 h-20 sm:w-24 sm:h-24 text-slate-800" /></div>
-                 <div><div className="text-[10px] sm:text-sm text-slate-500 mb-2 sm:mb-3 font-medium tracking-wide uppercase">{t.totalWithdrawn}</div><div className={`text-2xl sm:text-3xl font-bold tracking-tight truncate ${language === 'zh' ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(simulationData[simulationData.length - 1].totalWithdrawn)}</div></div>
-                 <div className="mt-auto pt-2"><div className="text-[10px] text-slate-400 font-medium">{t.passiveIncome}</div></div>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between relative overflow-hidden h-36 sm:h-auto transition-colors duration-300">
+                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><BarChart3 className="w-20 h-20 sm:w-24 sm:h-24 text-slate-800 dark:text-slate-100" /></div>
+                 <div><div className="text-[10px] sm:text-sm text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 font-medium tracking-wide uppercase">{t.totalWithdrawn}</div><div className={`text-2xl sm:text-3xl font-bold tracking-tight truncate ${language === 'zh' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(simulationData[simulationData.length - 1].totalWithdrawn)}</div></div>
+                 <div className="mt-auto pt-2"><div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{t.passiveIncome}</div></div>
               </div>
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden h-36 sm:h-auto sm:col-span-2 lg:col-span-1">
-                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Percent className="w-20 h-20 sm:w-24 sm:h-24 text-indigo-800" /></div>
-                 <div><div className="text-[10px] sm:text-sm text-slate-500 mb-2 sm:mb-3 font-medium tracking-wide uppercase">{t.netGrowth}</div><div className={`text-2xl sm:text-3xl font-bold tracking-tight truncate ${cagr >= 0 ? 'text-indigo-600' : 'text-slate-500'}`}>{cagr.toFixed(2)}%</div></div>
-                 <div className="mt-auto pt-2"><div className="text-[10px] text-slate-400 font-medium flex items-center gap-1"><TrendingUp className="w-3 h-3" />{language === 'zh' ? '复合年化收益率' : 'Realized CAGR (Net)'}</div></div>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between relative overflow-hidden h-36 sm:h-auto sm:col-span-2 lg:col-span-1 transition-colors duration-300">
+                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Percent className="w-20 h-20 sm:w-24 sm:h-24 text-indigo-800 dark:text-indigo-400" /></div>
+                 <div><div className="text-[10px] sm:text-sm text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 font-medium tracking-wide uppercase">{t.netGrowth}</div><div className={`text-2xl sm:text-3xl font-bold tracking-tight truncate ${cagr >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-500'}`}>{cagr.toFixed(2)}%</div></div>
+                 <div className="mt-auto pt-2"><div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1"><TrendingUp className="w-3 h-3" />{language === 'zh' ? '复合年化收益率' : 'Realized CAGR (Net)'}</div></div>
               </div>
         </div>
-        <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors duration-300">
             <SimulationChart data={simulationData} language={language} currency={currency} />
-            <div className="px-4 sm:px-6 pb-4 pt-4 border-t border-slate-50 mt-2"><p className="text-[10px] sm:text-xs text-slate-400 italic text-center leading-relaxed">{t.disclaimer}</p></div>
+            <div className="px-4 sm:px-6 pb-4 pt-4 border-t border-slate-50 dark:border-slate-800 mt-2"><p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 italic text-center leading-relaxed">{t.disclaimer}</p></div>
         </div>
-        {error && <div className="animate-fade-in space-y-4"><div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"><AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" /><p className="text-red-700 text-sm">{error}</p></div></div>}
+        {error && <div className="animate-fade-in space-y-4"><div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3"><AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" /><p className="text-red-700 dark:text-red-300 text-sm">{error}</p></div></div>}
       </main>
 
       <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex flex-col items-end space-y-3 group/fab">
         {!isAnalysisModalOpen && optimizationResult && (
-          <div className="bg-white p-3 rounded-xl shadow-xl border border-slate-100 transform translate-y-4 opacity-0 invisible group-hover/fab:translate-y-0 group-hover/fab:opacity-100 group-hover/fab:visible transition-all duration-300 w-48 text-right hidden sm:block">
-             <div className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide flex items-center justify-end gap-1"><FileText className="w-3 h-3" /> {language === 'zh' ? '最近分析' : 'Last Analysis'}</div>
-             <button onClick={() => setIsAnalysisModalOpen(true)} className="w-full text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2">{t.viewAnalysis} <ArrowRight className="w-3 h-3" /></button>
+          <div className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 transform translate-y-4 opacity-0 invisible group-hover/fab:translate-y-0 group-hover/fab:opacity-100 group-hover/fab:visible transition-all duration-300 w-48 text-right hidden sm:block">
+             <div className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-wide flex items-center justify-end gap-1"><FileText className="w-3 h-3" /> {language === 'zh' ? '最近分析' : 'Last Analysis'}</div>
+             <button onClick={() => setIsAnalysisModalOpen(true)} className="w-full text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2">{t.viewAnalysis} <ArrowRight className="w-3 h-3" /></button>
           </div>
         )}
         
-        <button onClick={handleOptimize} disabled={isOptimizing} className={`bg-slate-900 hover:bg-indigo-600 text-white shadow-2xl transition-all duration-300 ease-out flex items-center gap-0 overflow-hidden h-12 sm:h-14 pl-3 sm:pl-4 rounded-full ${isOptimizing ? 'w-40 sm:w-48' : 'w-12 sm:w-14 group-hover/fab:w-48 sm:group-hover/fab:w-56'}`}>
-           {isOptimizing ? <><div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0"></div><span className="whitespace-nowrap ml-2 sm:ml-3 text-sm sm:text-base font-medium">{t.processing}</span></> : <><Sparkles className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 transition-transform duration-700 ease-in-out group-hover/fab:rotate-[360deg]" /><span className="whitespace-nowrap opacity-0 group-hover/fab:opacity-100 ml-0 group-hover/fab:ml-3 transition-all duration-300 text-sm sm:text-base font-medium">{t.optimize}</span></>}
+        <button onClick={handleOptimize} disabled={isOptimizing} className={`bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-500 dark:hover:text-white shadow-2xl transition-all duration-300 ease-out flex items-center gap-0 overflow-hidden h-12 sm:h-14 pl-3 sm:pl-4 rounded-full ${isOptimizing ? 'w-40 sm:w-48' : 'w-12 sm:w-14 group-hover/fab:w-48 sm:group-hover/fab:w-56'}`}>
+           {isOptimizing ? <><div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white dark:border-slate-900/30 dark:border-t-slate-900 rounded-full animate-spin flex-shrink-0"></div><span className="whitespace-nowrap ml-2 sm:ml-3 text-sm sm:text-base font-medium">{t.processing}</span></> : <><Sparkles className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 transition-transform duration-700 ease-in-out group-hover/fab:rotate-[360deg]" /><span className="whitespace-nowrap opacity-0 group-hover/fab:opacity-100 ml-0 group-hover/fab:ml-3 transition-all duration-300 text-sm sm:text-base font-medium">{t.optimize}</span></>}
         </button>
       </div>
     </div>

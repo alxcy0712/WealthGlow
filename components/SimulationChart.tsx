@@ -24,20 +24,33 @@ interface SimulationChartProps {
 export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language, currency }) => {
   const t = translations[language];
   const [isMobile, setIsMobile] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   // Visibility States
   const [showValue, setShowValue] = useState(true);
   const [showWithdrawal, setShowWithdrawal] = useState(true);
-  const [showAnnualWithdrawal, setShowAnnualWithdrawal] = useState(false); // Default off to keep it clean
+  const [showAnnualWithdrawal, setShowAnnualWithdrawal] = useState(false); 
   
   // Dual Axis State
   const [useDualAxis, setUseDualAxis] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    const checkDark = () => setIsDarkMode(document.documentElement.classList.contains('dark'));
+    
     checkMobile();
+    checkDark();
+    
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    
+    // MutationObserver to watch for dark mode class changes on root
+    const observer = new MutationObserver(checkDark);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      observer.disconnect();
+    };
   }, []);
 
   const formatCurrency = (value: number) => {
@@ -75,27 +88,34 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
         annualFill: '#fbbf24',    // Amber 400
       };
 
+  // UI Theme Colors for Chart components
+  const themeColors = {
+    grid: isDarkMode ? '#1e293b' : '#e2e8f0', // slate-800 : slate-200
+    text: isDarkMode ? '#94a3b8' : '#64748b', // slate-400 : slate-500
+    tooltipBg: isDarkMode ? '#0f172a' : '#ffffff', // slate-900 : white
+    tooltipText: isDarkMode ? '#f1f5f9' : '#1e293b', // slate-100 : slate-900
+  };
+
   return (
-    <div className="w-full h-[480px] bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+    <div className="w-full h-[480px] bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-300">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-        <h3 className="text-lg font-semibold text-slate-800">{t.chartTitle}</h3>
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t.chartTitle}</h3>
         
-        <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-600">
-          {/* Controls */}
-          <label className="flex items-center gap-1.5 cursor-pointer bg-slate-50 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-colors select-none">
+        <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-slate-600 dark:text-slate-400">
+          <label className="flex items-center gap-1.5 cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors select-none">
             <input 
               type="checkbox" 
               checked={useDualAxis} 
               onChange={(e) => setUseDualAxis(e.target.checked)} 
-              className="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 border-slate-300"
+              className="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 border-slate-300 dark:border-slate-600"
             />
-            <Layers className="w-3.5 h-3.5 text-slate-500" />
+            <Layers className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             {t.dualAxis}
           </label>
 
           <button 
             onClick={() => setShowValue(!showValue)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors ${showValue ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors ${showValue ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700'}`}
           >
             {showValue ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             {t.chartPortfolioValue}
@@ -103,7 +123,7 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
 
           <button 
             onClick={() => setShowWithdrawal(!showWithdrawal)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors ${showWithdrawal ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors ${showWithdrawal ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700'}`}
           >
             {showWithdrawal ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             {t.chartWithdrawal}
@@ -111,7 +131,7 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
 
           <button 
             onClick={() => setShowAnnualWithdrawal(!showAnnualWithdrawal)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors ${showAnnualWithdrawal ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors ${showAnnualWithdrawal ? 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700'}`}
           >
             {showAnnualWithdrawal ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             {t.chartAnnualWithdrawal}
@@ -130,11 +150,11 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
               bottom: 0,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={themeColors.grid} />
             
             <XAxis 
               dataKey="year" 
-              tick={{ fill: '#64748b', fontSize: isMobile ? 10 : 12 }} 
+              tick={{ fill: themeColors.text, fontSize: isMobile ? 10 : 12 }} 
               axisLine={false}
               tickLine={false}
             />
@@ -143,7 +163,7 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
             <YAxis 
               yAxisId="left"
               tickFormatter={formatTick} 
-              tick={{ fill: '#64748b', fontSize: isMobile ? 10 : 12 }} 
+              tick={{ fill: themeColors.text, fontSize: isMobile ? 10 : 12 }} 
               axisLine={false}
               tickLine={false}
               width={isMobile ? 35 : 45}
@@ -155,7 +175,7 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
                 yAxisId="right"
                 orientation="right"
                 tickFormatter={formatTick} 
-                tick={{ fill: '#94a3b8', fontSize: isMobile ? 10 : 12 }} 
+                tick={{ fill: themeColors.text, fontSize: isMobile ? 10 : 12 }} 
                 axisLine={false}
                 tickLine={false}
                 width={isMobile ? 35 : 45}
@@ -168,7 +188,14 @@ export const SimulationChart: React.FC<SimulationChartProps> = ({ data, language
                 return [formatCurrency(value), label];
               }}
               labelFormatter={(label) => `${t.yearLabel} ${label}`}
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+              contentStyle={{ 
+                borderRadius: '12px', 
+                border: 'none', 
+                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', 
+                padding: '12px',
+                backgroundColor: themeColors.tooltipBg,
+                color: themeColors.tooltipText
+              }}
               itemStyle={{ fontSize: '12px', fontWeight: 500, padding: '2px 0' }}
             />
             
