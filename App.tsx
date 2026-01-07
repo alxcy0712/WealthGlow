@@ -283,23 +283,23 @@ const App: React.FC = () => {
             </div>
             <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-violet-700 truncate">{t.appTitle}</h1>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-4">
              {/* AI Settings Trigger */}
-             <button onClick={() => setIsAISettingsOpen(true)} className="group flex items-center h-10 px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200">
+             <button onClick={() => setIsAISettingsOpen(true)} className="group flex items-center h-10 px-2 sm:px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200" title={t.aiSettings}>
                <BrainCircuit className="w-5 h-5 flex-shrink-0" />
-               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold">{t.aiSettings}</span>
+               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold hidden sm:inline">{t.aiSettings}</span>
              </button>
 
-             <button onClick={() => setIsYieldCalcOpen(true)} className="group flex items-center h-10 px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200">
+             <button onClick={() => setIsYieldCalcOpen(true)} className="group flex items-center h-10 px-2 sm:px-3 rounded-full hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-all duration-300 border border-transparent hover:border-slate-200" title={t.yieldCalculator}>
                <Calculator className="w-5 h-5 flex-shrink-0" />
-               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold">{t.yieldCalculator}</span>
+               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold hidden sm:inline">{t.yieldCalculator}</span>
              </button>
 
-             <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+             <div className="h-6 w-px bg-slate-200 mx-1"></div>
              
-             <button onClick={handleLanguageSwitch} className="group flex items-center h-10 px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-indigo-600 transition-all duration-300 border border-transparent">
+             <button onClick={handleLanguageSwitch} className="group flex items-center h-10 px-2 sm:px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-indigo-600 transition-all duration-300 border border-transparent">
                <Languages className="w-4 h-4 flex-shrink-0" />
-               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold">{language === 'en' ? 'Switch to 中文' : '切换到 English'}</span>
+               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2 transition-all duration-500 ease-out text-sm font-bold hidden sm:inline">{language === 'en' ? 'EN' : '中文'}</span>
              </button>
           </div>
         </div>
