@@ -60,8 +60,12 @@ export const optimizePortfolio = async (
        }
   `;
 
-  if (config?.useCustom && config.provider === 'deepseek') {
-    return callDeepseek(prompt, config.apiKey, config.model || 'deepseek-chat', language);
+  if (config?.useCustom) {
+    if (config.provider === 'deepseek') {
+      return callOpenAICompatible(prompt, 'https://api.deepseek.com/v1/chat/completions', config.apiKey, config.model || 'deepseek-chat', language);
+    } else if (config.provider === 'siliconflow') {
+      return callOpenAICompatible(prompt, 'https://api.siliconflow.cn/v1/chat/completions', config.apiKey, config.model || 'deepseek-ai/DeepSeek-V3', language);
+    }
   }
 
   // Default or Custom Gemini
@@ -119,10 +123,10 @@ const callGemini = async (prompt: string, language: Language, customKey?: string
   };
 };
 
-const callDeepseek = async (prompt: string, apiKey: string, model: string, language: Language): Promise<OptimizationResult> => {
+const callOpenAICompatible = async (prompt: string, url: string, apiKey: string, model: string, language: Language): Promise<OptimizationResult> => {
   const langContext = language === 'zh' ? 'Chinese (Simplified)' : 'English';
   
-  const response = await fetch('https://api.deepseek.com/chat/completions', {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -140,7 +144,7 @@ const callDeepseek = async (prompt: string, apiKey: string, model: string, langu
 
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
-    throw new Error(errData.error?.message || `Deepseek API Error: ${response.status}`);
+    throw new Error(errData.error?.message || `AI API Error: ${response.status}`);
   }
 
   const data = await response.json();
@@ -150,7 +154,7 @@ const callDeepseek = async (prompt: string, apiKey: string, model: string, langu
     analysis: result.analysis,
     suggestedPortfolio: (result.suggestedPortfolio || []).map((item: any, index: number) => ({
       ...item,
-      id: `suggested-ds-${index}-${Date.now()}`
+      id: `suggested-ai-${index}-${Date.now()}`
     }))
   };
 };

@@ -33,7 +33,7 @@ export type Language = 'en' | 'zh';
 export type Currency = 'USD' | 'CNY';
 
 // AI Service Provider types
-export type AIProvider = 'gemini' | 'deepseek';
+export type AIProvider = 'gemini' | 'deepseek' | 'siliconflow';
 
 // Configuration for AI services
 export interface AIConfig {

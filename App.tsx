@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Asset, RiskLevel, SimulationYear, OptimizationResult, Language, Currency } from './types';
 import { AssetManager } from './components/AssetManager';
@@ -263,7 +262,7 @@ const App: React.FC = () => {
 
       <Modal isOpen={isAnalysisModalOpen} onClose={() => setIsAnalysisModalOpen(false)} title={t.modalAnalysisTitle}>
         {optimizationResult ? (
-          <div className="space-y-6">
+          <div className="p-6 sm:p-8 space-y-6">
             <div className="prose-indigo prose-sm dark:prose-invert"><SimpleMarkdown content={optimizationResult.analysis} /></div>
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">

@@ -38,6 +38,15 @@ export const AISettingsModal: React.FC<AISettingsModalProps> = ({ isOpen, onClos
     onClose();
   };
 
+  const getModelPlaceholder = () => {
+    switch (config.provider) {
+      case 'gemini': return 'gemini-3-pro-preview';
+      case 'deepseek': return 'deepseek-chat';
+      case 'siliconflow': return 'deepseek-ai/DeepSeek-V3';
+      default: return '';
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t.aiSettings}>
       <div className="space-y-6 p-6">
@@ -76,11 +85,12 @@ export const AISettingsModal: React.FC<AISettingsModalProps> = ({ isOpen, onClos
                 </label>
                 <select
                   value={config.provider}
-                  onChange={(e) => setConfig({ ...config, provider: e.target.value as AIProvider })}
+                  onChange={(e) => setConfig({ ...config, provider: e.target.value as AIProvider, model: '' })}
                   className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors dark:text-slate-200"
                 >
                   <option value="gemini">{t.providerDefault}</option>
                   <option value="deepseek">{t.providerDeepseek}</option>
+                  <option value="siliconflow">{t.providerSiliconflow}</option>
                 </select>
               </div>
 
@@ -108,7 +118,7 @@ export const AISettingsModal: React.FC<AISettingsModalProps> = ({ isOpen, onClos
                   type="text"
                   value={config.model}
                   onChange={(e) => setConfig({ ...config, model: e.target.value })}
-                  placeholder={config.provider === 'gemini' ? "gemini-3-pro-preview" : "deepseek-chat"}
+                  placeholder={getModelPlaceholder()}
                   className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-colors dark:text-slate-200"
                 />
               </div>
